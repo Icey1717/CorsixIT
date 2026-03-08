@@ -16,8 +16,12 @@ description_table = {
 
 movie = false
 
--- Levels will be added here as they are created in Phase 2
-levels = {}
+levels = {
+  "tt_level_01.level",
+}
+
+winning_text = "Congratulations! You have successfully completed Terminal Triage. " ..
+  "The tech world is a safer place thanks to you."
 
 winning_text_table = {}
 winning_text_table.en = "Congratulations! You have successfully completed Terminal Triage. " ..

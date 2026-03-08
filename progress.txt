@@ -104,3 +104,36 @@ Discovered, tested (TDD), and fixed a critical path resolution bug in the bootst
 
 **Key design decision:** `mod_root_dir` must be captured BEFORE `dofile` because `debug.getinfo` is context-sensitive — after `dofile`, the context shifts to the base `app.lua` file.
 
+---
+
+## [2026-03-08] CorsixIT-6ph.1.6 - Prove custom campaign and level discovery
+
+**Bead:** CorsixIT-6ph.1.6 (child of CorsixIT-6ph.1 - Bootstrap alternate Lua-root mod package)
+
+**What was done:**
+Proved that a custom campaign and level pair can be discovered and loaded from the Terminal Triage mod package. Added a minimal intro level and updated the campaign to reference it, then verified the entire discovery chain with a new TDD test suite.
+
+**Files created:**
+- `TerminalTriage/Levels/tt_level_01.level` — Minimal intro level "First Contact": no win/lose conditions, small staff and disease set, references `tt_level_01.map`
+- `TerminalTriage/Levels/tt_level_01.map` — Copy of `CorsixTH/Levels/Example.map` (standard 163,948-byte binary map), renamed for the mod
+- `TerminalTriage/Luatest/spec/campaign_discovery_spec.lua` — 29 TDD tests covering:
+  - Campaign file parses without error
+  - `name`, `description`/`description_table`, `levels`, `winning_text`/`winning_text_table` fields are present and non-empty
+  - All level entries are non-empty strings ending in `.level`
+  - Each referenced level file physically exists in `TerminalTriage/Levels/`
+  - Each level file has `%Name` and `%MapFile` directives
+  - `Campaigns/` and `Levels/` dirs resolve inside `TerminalTriage/`, not `CorsixTH/`
+
+**Files updated:**
+- `TerminalTriage/Campaigns/terminal_triage.campaign` — Added `"tt_level_01.level"` to `levels` table; added `winning_text` field alongside `winning_text_table`
+
+**Test results:**
+- Terminal Triage: 29/29 passing ✓ (was 14 before this bead)
+- CorsixTH baseline: 62/62 passing + 1 pre-existing unrelated failure (vip_spec.lua) ✓
+
+**Key design decisions:**
+- The intro level has all win/lose criteria zeroed out — it is a sandbox to prove the mod bootstraps correctly, not a tuned gameplay challenge
+- `tt_level_01.map` is a copy of the standard Example.map; future levels may use original Theme Hospital maps (`LEVEL.L1` etc.) or custom-authored maps
+- Test path resolution uses `lfs.currentdir()` (busted CWD = `Luatest/`) + one `up_n` call, which is reliable regardless of how `debug.getinfo` renders relative paths
+- Campaign discovery search scans one level deep only; placing the file directly in `TerminalTriage/Campaigns/` is the correct pattern
+

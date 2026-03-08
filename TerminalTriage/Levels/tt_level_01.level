@@ -1,0 +1,99 @@
+-- Terminal Triage: Level 01 — First Contact
+-- Intro level: small footprint, all win conditions disabled so the player can
+-- explore freely and confirm the mod boots correctly.
+
+%Name = "First Contact"
+%MapFile = "tt_level_01.map"
+
+%LevelBriefingTable.en = "Welcome to Terminal Triage!
+
+Your first repair shop has just opened its doors. Customers are already
+queueing outside with broken laptops, dead batteries, and mysterious
+blue-screen complaints.
+
+Hire a few technicians, set up a basic triage desk, and start fixing
+devices. There are no deadlines today — just get a feel for the tools."
+
+%LevelDebriefingTable.en = "Excellent work! You kept the shop running and
+earned a reputation for quality repairs.
+
+The tech world is full of problems waiting to be solved. On to the next
+challenge!"
+
+-- ── Town properties ──────────────────────────────────────────────────────────
+-- Starting cash: enough to build a small workshop
+-- Interest rate: 300 centiprocent = 3 %
+#town.StartCash.InterestRate 60000 300
+
+#gbv.SodaPrice 20
+
+-- ── Disease / expertise configuration ───────────────────────────────────────
+-- Research points divisor (must be > 0)
+#gbv.ResearchPointsDivisor 5
+
+-- Starting research rating
+#gbv.StartRating 100
+
+-- Enable General Practice (reception desk intake) from the start
+#expertise[1].Known.RschReqd 1 0 GENERAL_PRACTICE
+
+-- A minimal set of diseases so the level is playable
+#expertise[2].Known.RschReqd.MaxDiagDiff  1 20000 150 HAIRYITUS
+#expertise[3].Known.RschReqd.MaxDiagDiff  1 20000 500 BLOATY_HEAD
+#expertise[4].Known.RschReqd.MaxDiagDiff  1 20000 250 UNCOMMON_COLD
+#expertise[5].Known.RschReqd.MaxDiagDiff  1 20000 500 SLEEPING_ILLNESS
+#expertise[6].Known.RschReqd.MaxDiagDiff  1 20000 250 BALDNESS
+
+-- Diagnosis rooms
+#expertise[37].Known.RschReqd 1 20000 I_D_STANDARD  DIAGNOSIS
+#expertise[38].Known.RschReqd 1 20000 I_D_WARD      DIAGNOSIS
+
+-- ── Objects ──────────────────────────────────────────────────────────────────
+-- A minimal set of equipment so rooms can be built
+#objects[9].StartAvail.StartStrength.AvailableForLevel  1  8 1 Inflator Machine
+#objects[25].StartAvail.StartStrength.AvailableForLevel 1  8 1 Hair restorer
+#objects[30].StartAvail.StartStrength.AvailableForLevel 1 12 1 Operating Table
+
+-- ── Staff availability ───────────────────────────────────────────────────────
+#staff_levels[0].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate 0 6 4 2 2 10 10 10 10 5
+
+#staff[0].MinSalary 60 Nurse
+#staff[1].MinSalary 75 Doctor
+#staff[2].MinSalary 25 Handyman
+#staff[3].MinSalary 20 Receptionist
+
+#gbv.SalaryAdd[3] -30 Junior
+#gbv.SalaryAdd[4]  30 Doctor
+#gbv.SalaryAdd[5]  40 Surgeon
+#gbv.SalaryAdd[6]  30 Psychiatrist
+#gbv.SalaryAdd[7] 100 Consultant
+#gbv.SalaryAdd[8]  20 Researcher
+#gbv.SalaryAbilityDivisor 10
+
+#gbv.TrainingRate        40
+#gbv.AbilityThreshold[0] 75 Surgeon
+#gbv.AbilityThreshold[1] 60 Psychiatrist
+#gbv.AbilityThreshold[2] 45 Researcher
+#gbv.TrainingValue[0]    10 Projector
+#gbv.TrainingValue[1]    15 Skeleton
+#gbv.TrainingValue[2]    20 Bookcase
+
+-- ── Win / Lose conditions ────────────────────────────────────────────────────
+-- All zeroed out: no win/lose conditions for this intro level
+#win_criteria[0].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#win_criteria[1].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#win_criteria[2].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#win_criteria[3].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#win_criteria[4].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#win_criteria[5].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+
+#lose_criteria[0].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#lose_criteria[1].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#lose_criteria[2].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#lose_criteria[3].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#lose_criteria[4].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+#lose_criteria[5].Criteria.MaxMin.Value.Group.Bound 0 0 0 0 0
+
+-- ── Competitors ──────────────────────────────────────────────────────────────
+#computer[12].Playing 1.Name CORSIX
+#computer[13].Playing 1.Name ROUJIN
