@@ -1,0 +1,24 @@
+-- Terminal Triage Campaign
+-- This is a placeholder campaign file. Replace with actual level references in Phase 2.
+name = "Terminal Triage"
+
+description = "Welcome to Terminal Triage - where the symptoms are digital and the " ..
+  "prognosis is usually 'have you tried turning it off and on again?'. " ..
+  "Build and manage a tech repair shop, diagnose broken devices, and keep " ..
+  "your brand reputation sky-high."
+
+description_table = {
+  en = "Welcome to Terminal Triage - where the symptoms are digital and the " ..
+    "prognosis is usually 'have you tried turning it off and on again?'. " ..
+    "Build and manage a tech repair shop, diagnose broken devices, and keep " ..
+    "your brand reputation sky-high.",
+}
+
+movie = false
+
+-- Levels will be added here as they are created in Phase 2
+levels = {}
+
+winning_text_table = {}
+winning_text_table.en = "Congratulations! You have successfully completed Terminal Triage. " ..
+  "The tech world is a safer place thanks to you."

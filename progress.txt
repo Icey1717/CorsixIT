@@ -1,0 +1,32 @@
+## [2026-03-08] CorsixIT-6ph.1.1 - Define Terminal Triage package layout
+
+**Bead:** CorsixIT-6ph.1.1 (child of CorsixIT-6ph.1 - Bootstrap alternate Lua-root mod package)
+
+**What was done:**
+Created the complete Terminal Triage mod package scaffold under `TerminalTriage\`. This establishes the definitive folder structure and bootstrap file set that all subsequent bootstrap tasks (CorsixIT-6ph.1.2 through .1.9) depend on.
+
+**Files created:**
+- `TerminalTriage\README.md` - Package overview, prerequisites, quick start, dev workflow, architecture notes
+- `TerminalTriage\launch.bat` - Windows launcher using `--lua-dir` and `--config-file` flags
+- `TerminalTriage\launch.sh` - Linux/macOS launcher equivalent
+- `TerminalTriage\config.txt` - Local personal config (gitignored, created from template)
+- `TerminalTriage\hotkeys.txt` - Local personal hotkeys (gitignored)
+- `TerminalTriage\config.txt.template` - Committed config template with all key settings
+- `TerminalTriage\.gitignore` - Ignores config.txt, hotkeys.txt, Saves/, Screenshots/, OS noise
+- `TerminalTriage\Campaigns\terminal_triage.campaign` - Stub campaign file (Phase 2 will populate levels)
+- `TerminalTriage\Graphics\file_mapping.txt` - Stub graphics mapping (Phase 3 will populate sprites)
+- `TerminalTriage\Lua\languages\english_terminal_triage.lua` - Language override stub inheriting from English
+- `TerminalTriage\Levels\.gitkeep` - Tracks empty Levels directory in git
+
+**Key design decisions:**
+- `config.txt` is gitignored (users copy from template); `config.txt.template` is committed
+- Internal game IDs (room/disease/object) are preserved throughout - only player-facing strings change
+- The language file uses `Inherit("English", 0)` so only explicitly overridden strings change
+- The `--lua-dir` bootstrap hook is the sole mechanism for mod isolation; no fork of base `CorsixTH\` is needed
+
+**Investigation findings:**
+- `CorsixTH\Lua\strings.lua` confirms `Strings:init()` scans `Lua\languages\*.lua` automatically
+- Language files require `Font()`, `Language()`, `Inherit()`, `IsArabicNumerals()` in that order
+- Campaign files use `name`, `description`, `description_table`, `movie`, `levels`, `winning_text_table` keys
+- Level files use `%Name`, `%MapFile`, `%LevelBriefingTable.*`, `#expertise[]`, `#objects[]` directives
+

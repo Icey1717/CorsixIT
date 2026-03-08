@@ -1,0 +1,12 @@
+-- Terminal Triage custom graphics mapping
+-- This file maps original Theme Hospital sprite names to replacement files.
+-- Uncomment and populate entries as new graphics are added in Phase 3.
+--
+-- Format (as used by CorsixTH graphics.lua):
+--   file_mapping = {
+--     ["original_sprite_name"] = "path/to/replacement.png",
+--   }
+--
+-- Leave the table empty for now; use_new_graphics can remain false
+-- until actual replacement sprites are ready.
+file_mapping = {}

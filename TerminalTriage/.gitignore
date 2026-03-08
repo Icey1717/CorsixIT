@@ -1,0 +1,15 @@
+# User-created config (copy from config.txt.template and personalise)
+config.txt
+hotkeys.txt
+
+# Save games — user-local, not tracked
+Saves/*.sav
+Saves/*.map
+Saves/*.dat
+
+# Screenshots
+Screenshots/
+
+# OS noise
+.DS_Store
+Thumbs.db

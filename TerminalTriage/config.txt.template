@@ -1,0 +1,64 @@
+-------------------------------------------------------------------------------
+-- Terminal Triage — CorsixTH configuration template
+--
+-- Copy this file to config.txt in the same directory, then set
+-- theme_hospital_install to your Theme Hospital data path.
+--
+-- Launch the mod with:
+--   CorsixTH.exe --lua-dir="<this-dir>\Lua" --config-file="<this-dir>\config.txt"
+--   corsix-th  --lua-dir="<this-dir>/Lua"  --config-file="<this-dir>/config.txt"
+--
+-- All folder paths that are NOT explicitly set below will default to the
+-- directory containing this config.txt file.  So Levels/, Campaigns/, and
+-- Saves/ resolve to TerminalTriage/ automatically when this file is used.
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- REQUIRED: Point this to your Theme Hospital install directory.
+-- This is the folder that contains HOSPITAL.EXE (or the GOG data files).
+-- Do NOT leave this as the placeholder value or the game will not start.
+-------------------------------------------------------------------------------
+theme_hospital_install = [[C:\Path\To\ThemeHospital]]
+
+-------------------------------------------------------------------------------
+-- Display settings
+-------------------------------------------------------------------------------
+-- fullscreen = false
+-- width = 1280
+-- height = 720
+
+-------------------------------------------------------------------------------
+-- Language
+-- Use "English" until the Terminal Triage language file is ready (Phase 1).
+-- Once the language file is in place, switch to "Terminal Triage".
+-------------------------------------------------------------------------------
+language = [[English]]
+
+-------------------------------------------------------------------------------
+-- Folder overrides (optional)
+-- By default, Saves/, Levels/, Campaigns/, and Screenshots/ resolve relative
+-- to the directory of this config.txt file.  Uncomment and edit only if you
+-- need to redirect them somewhere else.
+-------------------------------------------------------------------------------
+-- savegames  = [[C:\Path\To\TerminalTriage\Saves]]
+-- levels     = [[C:\Path\To\TerminalTriage\Levels]]
+-- campaigns  = [[C:\Path\To\TerminalTriage\Campaigns]]
+-- screenshots = [[C:\Path\To\TerminalTriage\Screenshots]]
+
+-------------------------------------------------------------------------------
+-- Graphics overrides (Phase 3 — leave commented out until art assets exist)
+-- use_new_graphics    = false
+-- new_graphics_folder = [[C:\Path\To\TerminalTriage\Graphics]]
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Audio settings
+-------------------------------------------------------------------------------
+audio = true
+-- audio_music = [[C:\Path\To\TerminalTriage\Music]]
+
+-------------------------------------------------------------------------------
+-- Gameplay
+-------------------------------------------------------------------------------
+enable_announcer_subtitles = true
+autosave_frequency = 1
