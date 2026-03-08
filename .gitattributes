@@ -91,3 +91,6 @@ LevelEdit/src/icon32.png -text
 LevelEdit/src/icon48.png -text
 LevelEdit/src/icon64.png -text
 WindowsInstaller/welcome.bmp -text
+
+# Use bd merge for beads JSONL files
+.beads/issues.jsonl merge=beads
