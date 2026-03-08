@@ -137,3 +137,40 @@ Proved that a custom campaign and level pair can be discovered and loaded from t
 - Test path resolution uses `lfs.currentdir()` (busted CWD = `Luatest/`) + one `up_n` call, which is reliable regardless of how `debug.getinfo` renders relative paths
 - Campaign discovery search scans one level deep only; placing the file directly in `TerminalTriage/Campaigns/` is the correct pattern
 
+---
+
+## [2026-03-08] CorsixIT-6ph.1.7 - Prove graphics override path
+
+**Bead:** CorsixIT-6ph.1.7 (child of CorsixIT-6ph.1 - Bootstrap alternate Lua-root mod package)
+
+**What was done:**
+Proved the graphics override path resolves correctly from the mod package. The key mechanism is already in place: `App:getFullPath` is overridden by the bootstrapper, so `graphics.lua:106` naturally picks up `TerminalTriage/Graphics/` when `use_new_graphics = true`. Fixed a wrong format comment in `file_mapping.txt` and clarified the config template.
+
+**Bug fixed:**
+`TerminalTriage/Graphics/file_mapping.txt` had incorrect comments claiming the format is a key-value map `{["sprite_name"] = "path"}`. The actual format required by `graphics.lua:loadAnimations()` is a **sequential array** of `.dat` animation filenames. The engine iterates with `ipairs` — string keys are silently ignored.
+
+**Files updated:**
+- `TerminalTriage/Graphics/file_mapping.txt` — corrected format comment to show sequential array format; documented animation-only limitation
+- `TerminalTriage/config.txt.template` — expanded graphics section with correct `use_new_graphics = true` instruction, explanation of default path behaviour, and note about the sprite sheet limitation
+
+**Files created:**
+- `TerminalTriage/Luatest/spec/graphics_override_spec.lua` — 14 TDD tests covering:
+  - `getFullPath("Graphics", true)` resolves to `TerminalTriage/Graphics/` not `CorsixTH/`
+  - Trailing path separator behaviour
+  - `config.new_graphics_folder` takes priority over `getFullPath` (models `graphics.lua:106`)
+  - `file_mapping.txt` exists, parses without error, has a `file_mapping` table field
+  - `file_mapping` is a sequential array — no string keys allowed
+  - Limitation documentation: sprite sheet override is not yet supported
+
+**New bead created:**
+- `CorsixIT-6ph.4.1` (child of Phase 4 art/audio epic): "Sprite sheet override not yet supported in graphics pipeline" — `loadSpriteTable()` always calls `readDataFile()` from the TH install; Phase 4 art work will need to extend this path.
+
+**Test results:**
+- Terminal Triage: 43/43 passing ✓ (was 29 before this bead)
+- CorsixTH baseline: 62/62 passing + 1 pre-existing unrelated failure ✓
+
+**Key findings:**
+- The graphics override path is fully proven: `App:getFullPath` override → `TerminalTriage/Graphics/` → `file_mapping.txt` → sequential `.dat` files
+- No config changes needed to make the path resolve correctly; `use_new_graphics = true` in config.txt is the only switch required when Phase 3 art is ready
+- Sprite sheets (Tab/Dat pairs via `readDataFile`) are not overridable without engine changes — documented as CorsixIT-6ph.4.1
+

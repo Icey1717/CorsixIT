@@ -46,8 +46,20 @@ language = [[English]]
 -- screenshots = [[C:\Path\To\TerminalTriage\Screenshots]]
 
 -------------------------------------------------------------------------------
--- Graphics overrides (Phase 3 — leave commented out until art assets exist)
--- use_new_graphics    = false
+-- Graphics overrides (Phase 3/4 — leave commented out until art assets exist)
+--
+-- use_new_graphics = true  enables custom animation loading from Graphics/.
+-- When enabled, CorsixTH reads TerminalTriage/Graphics/file_mapping.txt and
+-- loads each .dat animation file listed there.
+--
+-- new_graphics_folder is optional; omit it to use the default path which the
+-- App:getFullPath override already directs to TerminalTriage/Graphics/.
+-- Only set it if you need to point at a different directory.
+--
+-- LIMITATION: only animation (.dat) overrides are supported.  Sprite sheets
+-- are always loaded from the original Theme Hospital install.
+--
+-- use_new_graphics    = true
 -- new_graphics_folder = [[C:\Path\To\TerminalTriage\Graphics]]
 -------------------------------------------------------------------------------
 

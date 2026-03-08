@@ -1,12 +1,20 @@
 -- Terminal Triage custom graphics mapping
--- This file maps original Theme Hospital sprite names to replacement files.
--- Uncomment and populate entries as new graphics are added in Phase 3.
+-- Loaded by CorsixTH when use_new_graphics = true in config.txt.
 --
--- Format (as used by CorsixTH graphics.lua):
+-- FORMAT: a sequential array of custom animation filenames (.dat format).
+-- CorsixTH iterates this list with ipairs and calls loadCustomAnims() on each
+-- entry.  Key-value mappings are silently ignored by the engine.
+--
 --   file_mapping = {
---     ["original_sprite_name"] = "path/to/replacement.png",
+--     "custom_anim_01.dat",   -- replaces or adds an animation sequence
+--     "custom_anim_02.dat",
 --   }
 --
--- Leave the table empty for now; use_new_graphics can remain false
--- until actual replacement sprites are ready.
+-- LIMITATION: only animation (.dat) files can be overridden here.
+-- Sprite sheets (Tab/Dat pairs loaded via readDataFile) are always read
+-- from the original Theme Hospital install directory — this is a known
+-- Phase 4 limitation.
+--
+-- Leave the table empty until actual replacement animations are ready.
 file_mapping = {}
+
