@@ -2,6 +2,11 @@
 config.txt
 hotkeys.txt
 
+# The Lua/ directory is the alternate Lua root.
+# Only mod-specific overrides are committed; all other files fall back to
+# CorsixTH/Lua/ at runtime via the bootstrapper (Lua/app.lua).
+# Add explicit !-negation rules here if a new override file is committed.
+
 # Save games — user-local, not tracked
 Saves/*.sav
 Saves/*.map

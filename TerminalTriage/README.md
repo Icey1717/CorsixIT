@@ -7,9 +7,13 @@
 ```
 TerminalTriage/
   Lua/                      <- Alternate Lua root (passed via --lua-dir)
+    app.lua                 <- Bootstrapper: patches require, loads base app.lua
+    class.lua               <- Forward stub -> CorsixTH/Lua/class.lua
+    strict.lua              <- Forward stub -> CorsixTH/Lua/strict.lua
+    utility.lua             <- Forward stub -> CorsixTH/Lua/utility.lua
     languages/
       english_terminal_triage.lua   <- IT re-theme string overrides (Phase 1)
-    ...                     <- Future: custom rooms, diseases, objects, etc.
+    ...                     <- Future: mod override files (rooms, diseases, etc.)
   Levels/                   <- Custom .level files for Terminal Triage scenarios
   Campaigns/                <- Custom .campaign files
     terminal_triage.campaign
@@ -81,6 +85,28 @@ For active development inside the CorsixTH repository:
 This keeps Terminal Triage isolated so upstream CorsixTH updates do not conflict with mod changes.
 
 ## Architecture Notes
+
+### Lua Root Bootstrapper
+
+CorsixTH's `--lua-dir` flag **completely replaces** the normal `CorsixTH/Lua/` search root with the specified directory. This means every module that `corsixth.require` tries to load must be present in the alternate root — there is no automatic fallback.
+
+Terminal Triage solves this with a four-file bootstrapper in `TerminalTriage/Lua/`:
+
+| File | Purpose |
+|------|---------|
+| `utility.lua` | Forward stub — `dofile`s `CorsixTH/Lua/utility.lua` |
+| `strict.lua` | Forward stub — `dofile`s `CorsixTH/Lua/strict.lua` |
+| `class.lua` | Forward stub — `dofile`s `CorsixTH/Lua/class.lua` |
+| `app.lua` | **Bootstrapper** — patches `corsixth.require` to fall back to `CorsixTH/Lua/`, then `dofile`s the real `app.lua` |
+
+The first three stubs are necessary because CorsixTH.lua loads `utility`, `strict`, and `class` *before* `app`, so the fallback patch cannot yet be in place. After `app.lua` runs, all subsequent `corsixth.require` calls go through the patched version which:
+
+1. Tries the mod's `Lua/` directory first (mod overrides take priority).
+2. Falls back to `CorsixTH/Lua/` if the file is absent from the mod directory.
+
+This means the mod only needs to commit files it **actually overrides** — everything else loads transparently from the base game. The relative path `../../CorsixTH/Lua/` is hard-coded in the stubs, making this approach dependent on the development repository layout.
+
+### Other Notes
 
 - **Internal IDs are preserved for the first release.** Room IDs (`gp`, `pharmacy`, etc.), disease IDs (`bloaty_head`, etc.), and object IDs are kept stable. Only player-facing text changes.
 - **Language overrides** live in `Lua\languages\english_terminal_triage.lua`. This file inherits from `English` and overrides all hospital terminology with IT-repair equivalents.

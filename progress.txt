@@ -30,3 +30,46 @@ Created the complete Terminal Triage mod package scaffold under `TerminalTriage\
 - Campaign files use `name`, `description`, `description_table`, `movie`, `levels`, `winning_text_table` keys
 - Level files use `%Name`, `%MapFile`, `%LevelBriefingTable.*`, `#expertise[]`, `#objects[]` directives
 
+---
+
+## [2026-03-08] CorsixIT-6ph.1.2 & 1.3 - Launcher strategy + Config baseline
+
+**Beads:** CorsixIT-6ph.1.2 and CorsixIT-6ph.1.3 (closed — completed as part of 1.1 work)
+
+Both beads were fulfilled by the files created in CorsixIT-6ph.1.1:
+- **Launcher strategy (1.2):** `launch.bat` and `launch.sh` implement the `--lua-dir` + `--config-file` pattern
+- **Config baseline (1.3):** `config.txt.template` captures all required settings; `config.txt` (from template) is the user's local copy
+
+---
+
+## [2026-03-08] CorsixIT-6ph.1.4 - Stand up minimal alternate Lua root
+
+**Bead:** CorsixIT-6ph.1.4 (child of CorsixIT-6ph.1 - Bootstrap alternate Lua-root mod package)
+
+**What was done:**
+Created the minimal four-file alternate Lua root that allows CorsixTH to boot via `--lua-dir=TerminalTriage\Lua`. The key technical challenge was that `--lua-dir` completely replaces the base `CorsixTH\Lua\` root with no automatic fallback — every module must be present in the alternate root or the game crashes.
+
+**Files created:**
+- `TerminalTriage\Lua\utility.lua` - Forward stub: `dofile`s base `CorsixTH\Lua\utility.lua`
+- `TerminalTriage\Lua\strict.lua` - Forward stub: `dofile`s base `CorsixTH\Lua\strict.lua`
+- `TerminalTriage\Lua\class.lua` - Forward stub: `dofile`s base `CorsixTH\Lua\class.lua`
+- `TerminalTriage\Lua\app.lua` - Bootstrapper: monkey-patches `corsixth.require` to fall back to `CorsixTH\Lua\`, then `dofile`s the real `app.lua`
+
+**Files updated:**
+- `TerminalTriage\.gitignore` - Added note about Lua override tracking strategy
+- `TerminalTriage\README.md` - Added Lua Root Bootstrapper section with architecture table
+
+**Key design decisions:**
+- Three stubs (`utility`, `strict`, `class`) are needed because `CorsixTH.lua` loads them BEFORE `app`, so the fallback patch cannot yet be in place
+- `app.lua` monkey-patches `corsixth.require` to try mod dir first, then fall back to `CorsixTH\Lua\`
+- Mod only commits files it actually overrides — everything else falls through to the base game transparently
+- The relative path `../../CorsixTH/Lua/` works for the development repository layout; distribution builds will need a configurable path
+- `persist` is a preloaded C module (not a Lua file) — no stub needed for it
+
+**Investigation findings:**
+- `CorsixTH.lua` line 34: `local persist = require("persist")` — `persist` is a C module preloaded by the engine
+- `--lua-dir` completely replaces `code_dir`; `CorsixTH\Lua\` is NOT in `package.path` after override
+- `corsixth.require` only searches `code_dir` via `persist.dofile`; standard `require` uses `package.path`
+- `class.lua` calls `strict_declare_global "class"` before setting the global — strict mode compatibility is built in
+- All `corsixth.require` calls in `App:init()` happen after `app.lua` executes, so the monkey-patch covers all of them
+
