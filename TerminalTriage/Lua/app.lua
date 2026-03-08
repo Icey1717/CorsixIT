@@ -29,6 +29,14 @@
 
 local pathsep = package.config:sub(1, 1)
 
+-- Capture the mod root directory from THIS file's source path BEFORE dofile-ing
+-- base app.lua. Uses the same sub(2,-12) math as the base App:getFullPath, but
+-- resolves to TerminalTriage/ rather than CorsixTH/.
+--   source = "@G:\repos\CorsixIT\TerminalTriage\Lua\app.lua"
+--   sub(2,-12) strips '@' prefix and 11 trailing chars ("Lua\app.lua")
+--   result  = "G:\repos\CorsixIT\TerminalTriage\"
+local mod_root_dir = debug.getinfo(1, "S").source:sub(2, -12)
+
 -- Resolve the mod's Lua directory from this file's absolute source path.
 local mod_lua_dir = debug.getinfo(1, "S").source:sub(2):match("^(.*[/\\])")
 
@@ -90,3 +98,19 @@ end
 -- be when running unmodded CorsixTH.  All corsixth.require calls that happen
 -- later (inside App:init and beyond) will now go through our patched version.
 dofile(base_lua_dir .. "app.lua")
+
+-- Override App:getFullPath to resolve relative to TerminalTriage/, not CorsixTH/.
+--
+-- The base implementation uses debug.getinfo(1,"S").source which always points
+-- to CorsixTH/Lua/app.lua (the file that defines the method), even when loaded
+-- via our dofile above.  That would cause Levels/, Campaigns/, and
+-- Lua/languages/ to resolve inside CorsixTH/ instead of TerminalTriage/.
+--
+-- We replace the method with one that uses mod_root_dir, which was captured from
+-- THIS file's source path before the dofile, so it correctly points to TerminalTriage/.
+local _mod_root = mod_root_dir
+App.getFullPath = function(self, folders, trailing_slash)
+  if type(folders) ~= "table" then folders = {folders} end
+  local ending = trailing_slash and pathsep or ""
+  return _mod_root .. table.concat(folders, pathsep) .. ending
+end

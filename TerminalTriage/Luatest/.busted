@@ -1,0 +1,5 @@
+return {
+  default = {
+    -- No extra lpath needed — tests only use pure Lua (no CorsixTH C extensions)
+  },
+}
