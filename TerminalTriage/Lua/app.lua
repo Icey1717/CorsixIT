@@ -1140,6 +1140,20 @@ function App:saveHotkeys()
   require('config_finder').save_hotkeys(hotkeys_filename, self.hotkeys)
 end
 
+--! Drives n game ticks in a tight loop without involving the SDL event system.
+-- Each call forces world.tick_timer to 0 so that World:onTick() fires one full
+-- game tick per iteration, regardless of the current tick_rate setting.
+-- Safe to call from a --headless-test script or any non-SDL context.
+--!param n (number) Number of game ticks to simulate.
+function App:runSimulatedTicks(n)
+  local world = self.world
+  if not world then return end
+  for _ = 1, n do
+    world.tick_timer = 0  -- bypass tick_rate countdown, fire immediately
+    world:onTick()
+  end
+end
+
 --! Runs a Lua test script in headless mode instead of the normal SDL event loop.
 -- The script at the path given by --headless-test=<path> is loaded and called
 -- with this App instance as its sole argument.  The process exits 0 on success

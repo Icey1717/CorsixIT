@@ -979,6 +979,37 @@ function World:setEndYear()
   end
 end
 
+--! Drives the simulation forward in a tight loop until game_date reaches the
+-- given calendar date (year / month / day, hour 0).  Uses the same tick-forcing
+-- technique as App:runSimulatedTicks — sets tick_timer to 0 before every
+-- World:onTick() call so each iteration produces exactly one game tick.
+--
+-- The function stops as soon as self.game_date >= Date(year, month, day).
+-- An error is raised if the target is not reached within max_ticks iterations
+-- (default 200,000 ≈ 11 in-game years at 1 h/tick) to guard against bugs that
+-- would otherwise spin forever.
+--
+--!param year  (number) Target year.
+--!param month (number) Target month (1-12).
+--!param day   (number) Target day (1-31).
+--!param max_ticks (number, optional) Safety cap on iterations (default 200000).
+function World:advanceToDate(year, month, day, max_ticks)
+  max_ticks = max_ticks or 200000
+  local target = Date(year, month, day)
+  local ticks = 0
+  while self.game_date < target do
+    if ticks >= max_ticks then
+      error(string.format(
+          "World:advanceToDate: did not reach %d-%02d-%02d after %d ticks "
+          .. "(current date: %s)",
+          year, month, day, max_ticks, self.game_date:tostring()))
+    end
+    self.tick_timer = 0
+    self:onTick()
+    ticks = ticks + 1
+  end
+end
+
 --! Checks if a time jump caused an emergency to be missed
 --!param prev_date (Date) Original game date before jump
 --!param new_date (Date) Game date after time jump
