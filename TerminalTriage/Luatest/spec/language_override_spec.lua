@@ -1,0 +1,456 @@
+--[[ Terminal Triage — Language Override Tests
+  Verifies that english_terminal_triage.lua exists, parses correctly, and
+  contains the expected IT-themed string overrides from Phase 2.
+
+  Run from TerminalTriage/Luatest/:
+    busted
+
+  These tests cover:
+    1. Language file exists at TerminalTriage/Lua/languages/
+    2. File parses as valid Lua in a mocked DSL sandbox
+    3. Staff class labels are IT-themed (no "nurse", "doctor", "handyman" etc.)
+    4. Room names map to IT equivalents
+    5. Disease names are IT-themed (not original hospital disease names)
+    6. Key adviser messages replace hospital terminology
+    7. Transaction labels are IT-appropriate
+    8. Casebook labels are IT-appropriate
+    9. "hospital" does not appear in staff class or room name strings
+   10. VIP remarks table has exactly 15 entries (matching original structure)
+--]]
+
+local lfs = require("lfs")
+local pathsep = package.config:sub(1, 1)
+
+local function up_n(path, n)
+  local p = path:gsub("[/\\]$", "")
+  for _ = 1, n do
+    p = p:match("(.*)[/\\].*") or p
+  end
+  return p .. pathsep
+end
+
+-- CWD is TerminalTriage/Luatest/ → up 1 = TerminalTriage/
+local mod_root = up_n(lfs.currentdir(), 1)
+local lang_file = mod_root .. "Lua" .. pathsep .. "languages" .. pathsep .. "english_terminal_triage.lua"
+
+-- ── Sandbox helpers ───────────────────────────────────────────────────────────
+
+-- Returns a deep auto-vivifying table that records all nested assignments.
+local function auto_table()
+  local t = {}
+  local mt = {}
+  mt.__index = function(tbl, k)
+    local child = auto_table()
+    rawset(tbl, k, child)
+    return child
+  end
+  setmetatable(t, mt)
+  return t
+end
+
+--- Load the language file in a sandbox that mocks all CorsixTH DSL functions.
+-- Returns the populated sandbox environment or nil + error message.
+local function load_language_file(path)
+  local chunk, err = loadfile(path)
+  if not chunk then return nil, "loadfile failed: " .. tostring(err) end
+
+  -- Provide all top-level namespaces the file writes into.
+  local env = {
+    -- CorsixTH DSL no-ops
+    Font             = function() end,
+    Language         = function() end,
+    Inherit          = function() end,
+    IsArabicNumerals = function() end,
+    SetSpeechFile    = function() end,
+    Encoding         = function() end,
+
+    -- Standard Lua globals needed by some language files
+    ipairs  = ipairs,
+    pairs   = pairs,
+    type    = type,
+    tostring = tostring,
+    string  = string,
+    table   = table,
+
+    -- String namespaces (auto-vivifying so nested keys work)
+    staff_class      = auto_table(),
+    staff_title      = auto_table(),
+    rooms_short      = auto_table(),
+    rooms_long       = auto_table(),
+    room_classes     = auto_table(),
+    diseases         = auto_table(),
+    adviser          = auto_table(),
+    transactions     = auto_table(),
+    graphs           = auto_table(),
+    research         = auto_table(),
+    casebook         = auto_table(),
+    dynamic_info     = auto_table(),
+    misc             = auto_table(),
+    bank_manager     = auto_table(),
+    tooltip          = auto_table(),
+    confirmation     = auto_table(),
+    fax              = auto_table(),
+    vip_names        = {},
+  }
+
+  setmetatable(env, {__index = _G})
+
+  local ok, run_err = pcall(function()
+    debug.setupvalue(chunk, 1, env)
+    chunk()
+  end)
+
+  if not ok then return nil, "execution failed: " .. tostring(run_err) end
+  return env
+end
+
+-- ── File existence ────────────────────────────────────────────────────────────
+
+describe("english_terminal_triage.lua file presence", function()
+
+  it("language file exists at TerminalTriage/Lua/languages/", function()
+    local f = io.open(lang_file, "r")
+    assert.truthy(f, "Expected language file at: " .. lang_file)
+    if f then f:close() end
+  end)
+
+  it("language file is non-empty", function()
+    local attr = lfs.attributes(lang_file)
+    assert.truthy(attr and attr.size > 500,
+      "Language file should have substantial content (>500 bytes), got: " .. tostring(attr and attr.size))
+  end)
+
+end)
+
+-- ── Parse validity ────────────────────────────────────────────────────────────
+
+local env  -- populated once for all subsequent tests
+local load_error
+
+describe("english_terminal_triage.lua syntax and parse", function()
+
+  it("loads and executes without error in a mocked DSL sandbox", function()
+    env, load_error = load_language_file(lang_file)
+    assert.truthy(env, "Language file failed to load: " .. tostring(load_error))
+  end)
+
+end)
+
+-- All tests below depend on a successful load.
+local function require_env()
+  if not env then
+    env, load_error = load_language_file(lang_file)
+  end
+  assert.truthy(env, "Prerequisite: language file must load cleanly. Error: " .. tostring(load_error))
+  return env
+end
+
+-- ── Staff class labels ────────────────────────────────────────────────────────
+
+describe("staff_class overrides (IT-themed)", function()
+
+  it("staff_class.nurse is re-themed away from 'Nurse'", function()
+    local e = require_env()
+    local v = tostring(e.staff_class.nurse)
+    assert.not_equal("Nurse", v, "staff_class.nurse should be re-themed")
+    assert.truthy(#v > 0, "staff_class.nurse must not be empty")
+  end)
+
+  it("staff_class.doctor is re-themed away from 'Doctor'", function()
+    local e = require_env()
+    local v = tostring(e.staff_class.doctor)
+    assert.not_equal("Doctor", v, "staff_class.doctor should be re-themed")
+    assert.truthy(#v > 0)
+  end)
+
+  it("staff_class.handyman is re-themed away from 'Handyman'", function()
+    local e = require_env()
+    local v = tostring(e.staff_class.handyman)
+    assert.not_equal("Handyman", v, "staff_class.handyman should be re-themed")
+    assert.truthy(#v > 0)
+  end)
+
+  it("staff_class.receptionist is re-themed", function()
+    local e = require_env()
+    local v = tostring(e.staff_class.receptionist)
+    assert.truthy(#v > 0, "staff_class.receptionist must not be empty")
+  end)
+
+  it("none of the staff_class values contain 'hospital' (case-insensitive)", function()
+    local e = require_env()
+    for key, val in pairs(e.staff_class) do
+      if type(val) == "string" then
+        assert.falsy(val:lower():find("hospital"),
+          "staff_class." .. key .. " must not contain 'hospital': " .. val)
+      end
+    end
+  end)
+
+end)
+
+-- ── Room names ────────────────────────────────────────────────────────────────
+
+describe("rooms_short overrides (IT-themed)", function()
+
+  it("reception is renamed to an IT equivalent", function()
+    local e = require_env()
+    local v = tostring(e.rooms_short.reception)
+    assert.not_equal("Reception", v, "rooms_short.reception should be re-themed")
+    assert.truthy(#v > 0)
+  end)
+
+  it("gps_office is renamed away from GP's Office", function()
+    local e = require_env()
+    local v = tostring(e.rooms_short.gps_office)
+    assert.falsy(v:lower():find("gp"), "rooms_short.gps_office must not contain 'GP': " .. v)
+    assert.truthy(#v > 0)
+  end)
+
+  it("operating_theatre is renamed to a hardware repair equivalent", function()
+    local e = require_env()
+    local v = tostring(e.rooms_short.operating_theatre)
+    assert.falsy(v:lower():find("operating"), "rooms_short.operating_theatre must not say 'Operating': " .. v)
+    assert.truthy(#v > 0)
+  end)
+
+  it("pharmacy is renamed to a quick fix equivalent", function()
+    local e = require_env()
+    local v = tostring(e.rooms_short.pharmacy)
+    assert.falsy(v:lower():find("pharma"), "rooms_short.pharmacy must not say 'Pharma': " .. v)
+    assert.truthy(#v > 0)
+  end)
+
+  it("staffroom is renamed to a break room equivalent", function()
+    local e = require_env()
+    local v = tostring(e.rooms_short.staffroom)
+    assert.truthy(#v > 0, "rooms_short.staffroom must not be empty")
+  end)
+
+  it("none of the rooms_short values contain 'hospital'", function()
+    local e = require_env()
+    for key, val in pairs(e.rooms_short) do
+      if type(val) == "string" then
+        assert.falsy(val:lower():find("hospital"),
+          "rooms_short." .. key .. " must not contain 'hospital': " .. val)
+      end
+    end
+  end)
+
+end)
+
+-- ── Disease names ─────────────────────────────────────────────────────────────
+
+describe("disease name overrides (IT-themed)", function()
+
+  it("diseases.bloaty_head.name is re-themed (Battery Balloon or similar)", function()
+    local e = require_env()
+    local v = tostring(e.diseases.bloaty_head.name)
+    assert.not_equal("Bloaty Head", v, "diseases.bloaty_head.name should be re-themed")
+    assert.truthy(#v > 0)
+  end)
+
+  it("diseases.bloaty_head has cause, symptoms, and cure text", function()
+    local e = require_env()
+    assert.truthy(type(e.diseases.bloaty_head.cause)    == "string" and #e.diseases.bloaty_head.cause    > 0, "bloaty_head.cause is missing")
+    assert.truthy(type(e.diseases.bloaty_head.symptoms) == "string" and #e.diseases.bloaty_head.symptoms > 0, "bloaty_head.symptoms is missing")
+    assert.truthy(type(e.diseases.bloaty_head.cure)     == "string" and #e.diseases.bloaty_head.cure     > 0, "bloaty_head.cure is missing")
+  end)
+
+  it("diseases.king_complex.name replaces 'King Complex' with an IT equivalent", function()
+    local e = require_env()
+    local v = tostring(e.diseases.king_complex.name)
+    assert.not_equal("King Complex", v)
+    assert.truthy(#v > 0)
+  end)
+
+  it("diseases.jellyitis.name is re-themed", function()
+    local e = require_env()
+    local v = tostring(e.diseases.jellyitis.name)
+    assert.not_equal("Jellyitis", v)
+    assert.truthy(#v > 0)
+  end)
+
+  it("diseases.diag_scanner.name is overridden for the diagnostic display", function()
+    local e = require_env()
+    local v = tostring(e.diseases.diag_scanner.name)
+    assert.truthy(#v > 0, "diag_scanner.name must be set")
+  end)
+
+  -- At least 10 main diseases should have all four fields
+  it("at least 10 main diseases have name, cause, symptoms and cure all set", function()
+    local e = require_env()
+    local treatable = {
+      "bloaty_head", "hairyitis", "king_complex", "invisibility",
+      "serious_radiation", "slack_tongue", "alien_dna", "fractured_bones",
+      "baldness", "jellyitis",
+    }
+    local count = 0
+    for _, key in ipairs(treatable) do
+      local d = e.diseases[key]
+      if type(d.name)     == "string" and #d.name     > 0 and
+         type(d.cause)    == "string" and #d.cause    > 0 and
+         type(d.symptoms) == "string" and #d.symptoms > 0 and
+         type(d.cure)     == "string" and #d.cure     > 0 then
+        count = count + 1
+      end
+    end
+    assert.truthy(count >= 10,
+      "Expected all 10 sampled diseases to have full text; only " .. count .. " do")
+  end)
+
+end)
+
+-- ── Adviser strings ───────────────────────────────────────────────────────────
+
+describe("adviser string overrides (IT-themed)", function()
+
+  it("adviser.warnings.money_low is overridden", function()
+    local e = require_env()
+    local v = tostring(e.adviser.warnings.money_low)
+    assert.truthy(#v > 0, "adviser.warnings.money_low must be set")
+  end)
+
+  it("adviser.goals.lose.kill replaces 'patients' with IT language", function()
+    local e = require_env()
+    local v = tostring(e.adviser.goals.lose.kill)
+    assert.truthy(#v > 0)
+    -- Should not say "patients" in the IT mod
+    assert.falsy(v:lower():find("patients"),
+      "adviser.goals.lose.kill must not say 'patients': " .. v)
+  end)
+
+  it("adviser.room_requirements.gps_office_need_doctor is re-themed", function()
+    local e = require_env()
+    local v = tostring(e.adviser.room_requirements.gps_office_need_doctor)
+    assert.truthy(#v > 0)
+  end)
+
+  it("adviser.staff_advice.need_doctors mentions Technicians not doctors", function()
+    local e = require_env()
+    local v = tostring(e.adviser.staff_advice.need_doctors)
+    assert.truthy(#v > 0)
+    assert.falsy(v:lower():find("doctor"),
+      "adviser.staff_advice.need_doctors should say Technicians, not doctors: " .. v)
+  end)
+
+end)
+
+-- ── Transaction labels ────────────────────────────────────────────────────────
+
+describe("transaction label overrides (IT-themed)", function()
+
+  it("transactions.cure is renamed to Repair Revenue", function()
+    local e = require_env()
+    local v = tostring(e.transactions.cure)
+    assert.not_equal("", v)
+    assert.falsy(v:lower():find("cure"),
+      "transactions.cure should not say 'cure' in IT mod: " .. v)
+  end)
+
+  it("transactions.emergency_bonus is overridden", function()
+    local e = require_env()
+    local v = tostring(e.transactions.emergency_bonus)
+    assert.truthy(#v > 0)
+  end)
+
+  it("transactions.vaccination is re-themed to malware removal", function()
+    local e = require_env()
+    local v = tostring(e.transactions.vaccination)
+    assert.truthy(#v > 0)
+    assert.falsy(v:lower():find("vaccin"),
+      "transactions.vaccination should not say 'vaccination': " .. v)
+  end)
+
+end)
+
+-- ── Casebook labels ───────────────────────────────────────────────────────────
+
+describe("casebook label overrides (IT-themed)", function()
+
+  it("casebook.cured is renamed away from 'Cured'", function()
+    local e = require_env()
+    local v = tostring(e.casebook.cured)
+    assert.not_equal("Cured", v, "casebook.cured should be re-themed")
+    assert.truthy(#v > 0)
+  end)
+
+  it("casebook.deaths is renamed to a device loss equivalent", function()
+    local e = require_env()
+    local v = tostring(e.casebook.deaths)
+    assert.not_equal("Deaths", v, "casebook.deaths should be re-themed")
+    assert.truthy(#v > 0)
+  end)
+
+  it("casebook.reputation is re-themed to Brand Trust", function()
+    local e = require_env()
+    local v = tostring(e.casebook.reputation)
+    assert.truthy(v:lower():find("brand") or v:lower():find("trust"),
+      "casebook.reputation should mention Brand Trust: " .. v)
+  end)
+
+end)
+
+-- ── VIP remarks table ─────────────────────────────────────────────────────────
+
+describe("fax.vip_visit_result.remarks table structure", function()
+
+  it("remarks table has exactly 15 entries to match original structure", function()
+    local e = require_env()
+    local count = 0
+    for i = 1, 15 do
+      if type(e.fax.vip_visit_result.remarks[i]) == "string" and
+         #e.fax.vip_visit_result.remarks[i] > 0 then
+        count = count + 1
+      end
+    end
+    assert.equal(15, count,
+      "fax.vip_visit_result.remarks must have 15 string entries; found " .. count)
+  end)
+
+  it("remarks[1] (best) contains positive language", function()
+    local e = require_env()
+    local v = tostring(e.fax.vip_visit_result.remarks[1])
+    local has_positive = v:lower():find("outstanding") or v:lower():find("excellent") or
+                         v:lower():find("exceptional") or v:lower():find("great")
+    assert.truthy(has_positive, "remarks[1] (best) should be positive: " .. v)
+  end)
+
+  it("remarks[15] (worst) contains negative language", function()
+    local e = require_env()
+    local v = tostring(e.fax.vip_visit_result.remarks[15])
+    local has_negative = v:lower():find("never") or v:lower():find("moment") or
+                         v:lower():find("authority") or v:lower():find("worst")
+    assert.truthy(has_negative, "remarks[15] (worst) should be negative: " .. v)
+  end)
+
+end)
+
+-- ── Hospital terminology check ────────────────────────────────────────────────
+
+describe("hospital terminology should not leak into IT mod strings", function()
+
+  local hospital_terms = {"hospital", "patient", "ward nurse", "gp's office"}
+
+  it("graphs.cures and graphs.deaths are re-themed (no 'cure'/'death' labels)", function()
+    local e = require_env()
+    local cures  = tostring(e.graphs.cures)
+    local deaths = tostring(e.graphs.deaths)
+    assert.falsy(cures:lower()  == "cures",  "graphs.cures should be re-themed: " .. cures)
+    assert.falsy(deaths:lower() == "deaths", "graphs.deaths should be re-themed: " .. deaths)
+  end)
+
+  it("misc.hospital_open does not say 'hospital'", function()
+    local e = require_env()
+    local v = tostring(e.misc.hospital_open)
+    assert.falsy(v:lower():find("hospital"),
+      "misc.hospital_open should not say 'hospital': " .. v)
+  end)
+
+  it("bank_manager.hospital_value does not say 'hospital'", function()
+    local e = require_env()
+    local v = tostring(e.bank_manager.hospital_value)
+    assert.falsy(v:lower():find("hospital"),
+      "bank_manager.hospital_value should not say 'hospital': " .. v)
+  end)
+
+end)

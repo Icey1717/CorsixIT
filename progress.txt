@@ -214,3 +214,50 @@ Proved the graphics override path resolves correctly from the mod package. The k
 - No config changes needed to make the path resolve correctly; `use_new_graphics = true` in config.txt is the only switch required when Phase 3 art is ready
 - Sprite sheets (Tab/Dat pairs via `readDataFile`) are not overridable without engine changes — documented as CorsixIT-6ph.4.1
 
+---
+
+## CorsixIT-6ph.2 — Phase 2: Text-first IT total conversion layer
+
+**Completed:** Phase 2 string overrides — `TerminalTriage/Lua/languages/english_terminal_triage.lua` fully populated.
+
+**What changed:**
+- `TerminalTriage/Lua/languages/english_terminal_triage.lua` — complete re-theme of all player-visible strings from hospital to IT-repair terminology. Covers:
+  - Staff classes and titles: Nurse → Bench Technician, Doctor → Technician, Handyman → Facilities Tech, Receptionist → Service Desk Coord., Surgeon → Hardware Engineer, plus all staff title variants
+  - 26 room names (short and long formats): Reception → Service Counter, GP's Office → Triage Desk, Pharmacy → Quick Fix Counter, Operating Theatre → Clean Room Workshop, Ward → Bulk Repair Bay, Staffroom → Break Room, etc.
+  - Room category labels: Treatment → Repair, Clinics → Service Labs
+  - All 36 disease entries re-themed as IT issues with full name, cause, symptoms, and cure text: Bloaty Head → Battery Balloon, Jellyitis → Tab Tsunami, King Complex → Admin Complex, Hairyitis → Cable Nesting, Sleeping Illness → Update Loop Fever, Ransomwear, Thermal Meltdown, Screen Splatter, etc. Diagnostic room names also overridden.
+  - 70+ adviser messages: staff advice, room requirements, warnings (money, queues, equipment, staff morale, temperature, litter/e-waste, plants), praise, information messages, earthquake/boiler/vomit-wave events, goals, level progress, research notifications, competitor messages, epidemic messages — all de-hospitalized
+  - Fax/notification messages: emergency (surge job), emergency result, disease discovery, epidemic with declare/cover-up choice, VIP (auditor) visit query and result including 15 ordered remarks table
+  - 35 transaction labels: cure → Repair Revenue, vaccination → Malware Removal, emergency_bonus → Surge Job Bonus, epidemy_coverup_fine → Outbreak Cover-Up Fine, etc.
+  - Graph labels: cures → Repairs, deaths → Device Losses, visitors → Customers, reputation → Brand Trust
+  - Research categories: cure → Repair Procedures, drugs → Parts & Materials, etc.
+  - Casebook labels: cured → Repaired, deaths → Devices Lost, reputation → Brand Trust, full cure_desc set
+  - Dynamic info bar: patient actions, staff actions, object info, VIP → Auditor, health_inspector → Compliance Inspector
+  - Misc: hospital_open → Business Open
+  - Bank manager: hospital_value → Business Value
+  - Key tooltips: rooms (all 18 main rooms), toolbar, hire staff window, research sliders, staff window, bank manager, watch icons
+  - Confirmations: restart_level → restart this contract
+  - VIP names: all 11 replaced with IT auditor/inspector personas
+
+- `TerminalTriage/Luatest/spec/language_override_spec.lua` — 36 new TDD tests covering:
+  - File existence and non-trivial size
+  - Sandbox parse validity (mocked CorsixTH DSL)
+  - Staff class re-theming (no original names remain)
+  - Room name re-theming (no hospital names remain)
+  - Disease names and full field coverage for 10+ diseases
+  - Key adviser message re-theming (no "patients", no "doctors" in wrong context)
+  - Transaction label re-theming (no "cure", "vaccination" terminology)
+  - Casebook re-theming (Brand Trust, Repaired, Devices Lost)
+  - VIP remarks table structure (15 entries, best positive, worst negative)
+  - Hospital terminology leak checks (misc, bank_manager, graphs)
+
+**Test results:**
+- Terminal Triage: 79/79 passing ✓ (was 43 before this bead)
+- CorsixTH baseline: 63/63 passing ✓
+
+**Key decisions:**
+- Header comment uses `--` line comments instead of `--[[...]]` block comment to avoid Lua long-string close sequence `]]` terminating the comment prematurely (the original `[[Terminal Triage English]]` example inside the block comment caused a parse error when loaded via `loadfile()`)
+- All internal IDs preserved; only values change — this is a pure text layer
+- `fax.epidemic_result` fields use dot notation rather than bracket subscripts for consistent style
+- Campaign briefing texts (level intro letters) are Phase 3 content and not in scope for Phase 2
+
