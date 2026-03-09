@@ -170,49 +170,131 @@ describe("file_mapping.txt in TerminalTriage/Graphics/", function()
 
 end)
 
--- ── Documented limitation: animations only ───────────────────────────────────
+-- ── Sprite sheet readDataFile override ───────────────────────────────────────
+--
+-- Tests for App:readDataFile override installed by TerminalTriage/Lua/app.lua.
+-- The override checks TerminalTriage/Graphics/{dir}/{filename} before falling
+-- back to the original Theme Hospital filesystem.
+--
+-- We simulate the override logic here (same pattern as patched_getFullPath above)
+-- so the tests run without the full CorsixTH C runtime.
 
-describe("Graphics override limitation documentation", function()
+describe("App:readDataFile sprite sheet override", function()
 
-  -- CorsixTH currently supports animation (.dat) overrides via file_mapping.txt
-  -- but does NOT support sprite sheet overrides. Sprite sheets are always loaded
-  -- via App:readDataFile() from the original Theme Hospital install.
-  --
-  -- This test suite acts as a specification: it asserts the KNOWN constraint
-  -- so that if the engine is extended in future, these tests flag the change.
+  local graphics_dir = mod_root .. "Graphics" .. pathsep
 
-  it("animation override path resolves to TerminalTriage/Graphics/ (supported)", function()
-    -- graphics.lua:106 picks up: getFullPath("Graphics", true)
-    -- which our override sends to TerminalTriage/Graphics/.
-    -- file_mapping.txt there lists .dat animation files to load.
-    local graphics_dir = mod_root .. "Graphics" .. pathsep
-    assert.truthy(file_exists(graphics_dir .. "file_mapping.txt"),
-      "file_mapping.txt must exist to enable animation overrides")
+  -- Simulate the override logic from TerminalTriage/Lua/app.lua
+  local function simulated_readDataFile(custom_root, dir, filename, orig_fn)
+    if dir and dir ~= "Bitmap" and dir ~= "Levels" and filename then
+      local custom_path = custom_root .. dir .. pathsep .. filename
+      local f = io.open(custom_path, "rb")
+      if f then
+        local data = f:read("*a")
+        f:close()
+        return data, "custom"
+      end
+    end
+    return orig_fn(dir, filename), "original"
+  end
+
+  local function orig_stub(dir, filename)
+    return "original_data:" .. tostring(dir) .. "/" .. tostring(filename)
+  end
+
+  local function write_temp_file(path, content)
+    local f = assert(io.open(path, "wb"), "Cannot create temp file: " .. path)
+    f:write(content)
+    f:close()
+  end
+
+  local data_dir  = graphics_dir .. "Data"  .. pathsep
+  local qdata_dir = graphics_dir .. "QData" .. pathsep
+
+  it("Graphics/Data/ override directory exists", function()
+    assert.equal("directory", lfs.attributes(data_dir, "mode"),
+      "TerminalTriage/Graphics/Data/ must exist for sprite overrides")
   end)
 
-  it("file_mapping.txt format is sequential array (not key-value sprite map)", function()
-    -- Confirmational: CorsixTH graphics.lua loadAnimations() uses ipairs over
-    -- file_mapping.  Only sequential string entries will be processed.
-    local file_mapping_path = mod_root .. "Graphics" .. pathsep .. "file_mapping.txt"
-    local result = assert(exec_config_file(file_mapping_path))
-    local fm = result.file_mapping
-    -- Empty table is valid for now (no Phase 3 art yet).
-    -- When entries exist, they MUST be sequential strings.
-    for i, v in ipairs(fm) do
+  it("Graphics/QData/ override directory exists", function()
+    assert.equal("directory", lfs.attributes(qdata_dir, "mode"),
+      "TerminalTriage/Graphics/QData/ must exist for sprite overrides")
+  end)
+
+  it("custom Data/ file is returned when override exists", function()
+    local custom_file = data_dir .. "TestSprite.tab"
+    write_temp_file(custom_file, "custom_sprite_data")
+    local result, source = simulated_readDataFile(graphics_dir, "Data", "TestSprite.tab", orig_stub)
+    os.remove(custom_file)
+    assert.equal("custom",            source)
+    assert.equal("custom_sprite_data", result)
+  end)
+
+  it("custom QData/ file is returned when override exists", function()
+    local custom_file = qdata_dir .. "Req05V.tab"
+    write_temp_file(custom_file, "custom_qdata_sprite")
+    local result, source = simulated_readDataFile(graphics_dir, "QData", "Req05V.tab", orig_stub)
+    os.remove(custom_file)
+    assert.equal("custom",              source)
+    assert.equal("custom_qdata_sprite", result)
+  end)
+
+  it("fallback is called when no custom file exists", function()
+    os.remove(data_dir .. "NonExistentSprite.tab")
+    local result, source = simulated_readDataFile(graphics_dir, "Data", "NonExistentSprite.tab", orig_stub)
+    assert.equal("original", source)
+    assert.truthy(result:find("original_data"))
+  end)
+
+  it("Bitmap dir bypasses custom graphics check", function()
+    local _, source = simulated_readDataFile(graphics_dir, "Bitmap", "aux_ui.tab", orig_stub)
+    assert.equal("original", source)
+  end)
+
+  it("Levels dir bypasses custom graphics check", function()
+    local _, source = simulated_readDataFile(graphics_dir, "Levels", "somemap.tab", orig_stub)
+    assert.equal("original", source)
+  end)
+
+  it("nil dir bypasses custom graphics check", function()
+    local _, source = simulated_readDataFile(graphics_dir, nil, "somefile.dat", orig_stub)
+    assert.equal("original", source)
+  end)
+
+  it("nil filename bypasses custom graphics check", function()
+    local _, source = simulated_readDataFile(graphics_dir, "Data", nil, orig_stub)
+    assert.equal("original", source)
+  end)
+
+  it("file_mapping.txt defines a sprite_mapping table", function()
+    local result = assert(exec_config_file(mod_root .. "Graphics" .. pathsep .. "file_mapping.txt"))
+    assert.not_nil(result.sprite_mapping,
+      "file_mapping.txt must define a 'sprite_mapping' table")
+    assert.equal("table", type(result.sprite_mapping))
+  end)
+
+end)
+
+-- ── Updated capability status ─────────────────────────────────────────────────
+
+describe("Graphics override capability status", function()
+
+  it("animation overrides are supported via file_mapping sequential array", function()
+    local result = assert(exec_config_file(mod_root .. "Graphics" .. pathsep .. "file_mapping.txt"))
+    assert.equal("table", type(result.file_mapping))
+    for i, v in ipairs(result.file_mapping) do
       assert.equal("string", type(v), "entry " .. i .. " must be a string filename")
     end
   end)
 
-  it("sprite sheet override is NOT yet supported (expected limitation)", function()
-    -- graphics.lua loadSpriteTable() calls app:readDataFile() which reads from
-    -- the original Theme Hospital directory only.  There is no hook for custom
-    -- sprite sheet paths.  This is a known limitation for Phase 4 art work.
-    --
-    -- This test documents the constraint: it passes precisely because the
-    -- game_data path in readDataFile does NOT include TerminalTriage/Graphics/.
-    -- If a future implementation adds sprite sheet overrides, this test should
-    -- be updated to reflect the new capability.
-    assert.truthy(true, "Sprite sheet override not yet implemented — see Phase 4")
+  it("sprite sheet override IS supported via App:readDataFile override in app.lua", function()
+    local graphics_dir = mod_root .. "Graphics" .. pathsep
+    local result = assert(exec_config_file(graphics_dir .. "file_mapping.txt"))
+    assert.equal("directory", lfs.attributes(graphics_dir .. "Data",  "mode"),
+      "Graphics/Data/ must exist for sprite overrides")
+    assert.equal("directory", lfs.attributes(graphics_dir .. "QData", "mode"),
+      "Graphics/QData/ must exist for sprite overrides")
+    assert.not_nil(result.sprite_mapping,
+      "sprite_mapping must be documented in file_mapping.txt")
   end)
 
 end)

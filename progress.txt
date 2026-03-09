@@ -320,4 +320,70 @@ disease/room selections tuned to match the Phase 2 string overrides.
 - Level files use 0-based indices for #win_criteria/#lose_criteria arrays; Lua `pairs`
   (not `ipairs`) required when iterating these in test helpers
 
+---
+
+## Session 4 — Phase 4.1: Sprite Sheet Override in Graphics Pipeline (CorsixIT-6ph.4.1)
+
+**Date:** 2026-03-09
+**Bead:** CorsixIT-6ph.4.1 — Sprite sheet override not yet supported in graphics pipeline
+**Status:** Closed ✓
+
+### Summary
+
+Resolved the Phase 4 blocker: added sprite sheet override support to the graphics
+pipeline via a monkey-patch of `App:readDataFile` in `TerminalTriage/Lua/app.lua`.
+This follows the same pattern already established for `App:getFullPath`.
+
+### Design
+
+CorsixTH's `Graphics:loadSpriteTable(dir, name, complex, palette)` always calls
+`self.app:readDataFile(dir, name..".tab")` and `self.app:readDataFile(dir, name..".dat")`
+to load sprite data. These calls go through `self.fs:readContents()` (C-side, always
+reads from the Theme Hospital install dir). There is no engine-level hook.
+
+The solution is to override `App:readDataFile` in the mod's `app.lua`. Before delegating
+to the original, it checks `TerminalTriage/Graphics/{dir}/{filename}` via `io.open`. If
+the file exists, it is returned directly (with RNC decompression if needed). Otherwise
+the call falls through to the original unchanged.
+
+### Files Changed
+
+- `TerminalTriage/Lua/app.lua`
+  - Added `App:readDataFile` override (after existing `App:getFullPath` override)
+  - Intercepts `dir="Data"` and `dir="QData"` sprite requests
+  - Skips `dir="Bitmap"` and `dir="Levels"` (have dedicated paths in base)
+  - Falls through to `_orig_readDataFile` when no custom file found
+  - Handles RNC-compressed custom files transparently
+
+- `TerminalTriage/Graphics/file_mapping.txt`
+  - Added `sprite_mapping = {}` table (currently empty, documents the convention)
+  - Updated comments to explain both animation and sprite override mechanisms
+
+- `TerminalTriage/Graphics/Data/.gitkeep` — NEW: override directory for Data sprites
+- `TerminalTriage/Graphics/QData/.gitkeep` — NEW: override directory for QData sprites
+
+- `TerminalTriage/Luatest/spec/graphics_override_spec.lua`
+  - Replaced "sprite sheet override NOT supported" placeholder tests
+  - Added 11 new tests for the readDataFile override logic:
+    - Graphics/Data/ and Graphics/QData/ directories exist
+    - Custom file in Data/ is returned over original
+    - Custom file in QData/ is returned over original
+    - Fallback to original when no custom file present
+    - Bitmap/Levels/nil dirs bypass the custom check
+    - file_mapping.txt defines sprite_mapping table
+    - Positive capability assertion replaces old limitation notice
+
+**Test results:**
+- Terminal Triage: 114/114 passing ✓ (was 105 before this session)
+- CorsixTH baseline: 63/63 passing ✓
+
+**Key decisions:**
+- Monkey-patching `App:readDataFile` (not Graphics:loadSpriteTable) is the minimal
+  change: it intercepts at the data layer without touching the cache or reload logic
+- Skipping Bitmap/Levels: `readBitmapDataFile` already uses a configurable path;
+  Levels maps are not sprites and not a mod concern
+- Override is purely additive — zero changes to CorsixTH engine code required
+- Phase 4 art work can now proceed: drop .tab+.dat pairs into Graphics/Data/ or
+  Graphics/QData/ and they will be picked up automatically on next game launch
+
 

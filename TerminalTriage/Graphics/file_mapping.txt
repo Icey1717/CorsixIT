@@ -1,20 +1,30 @@
 -- Terminal Triage custom graphics mapping
 -- Loaded by CorsixTH when use_new_graphics = true in config.txt.
 --
--- FORMAT: a sequential array of custom animation filenames (.dat format).
--- CorsixTH iterates this list with ipairs and calls loadCustomAnims() on each
--- entry.  Key-value mappings are silently ignored by the engine.
+-- FORMAT for animations: a sequential array of custom animation filenames (.dat).
+-- CorsixTH iterates this list with ipairs and calls loadCustomAnims() on each entry.
 --
 --   file_mapping = {
---     "custom_anim_01.dat",   -- replaces or adds an animation sequence
---     "custom_anim_02.dat",
+--     "custom_anim_01.dat",
 --   }
 --
--- LIMITATION: only animation (.dat) files can be overridden here.
--- Sprite sheets (Tab/Dat pairs loaded via readDataFile) are always read
--- from the original Theme Hospital install directory — this is a known
--- Phase 4 limitation.
+-- FORMAT for sprite sheet overrides (via App:readDataFile override in app.lua):
+-- sprite_mapping is a key-value table mapping original sprite names to replacement
+-- filenames.  Override files (.tab + .dat pairs) must be placed under:
 --
--- Leave the table empty until actual replacement animations are ready.
-file_mapping = {}
+--   TerminalTriage/Graphics/Data/{name}.tab   (and .dat)
+--   TerminalTriage/Graphics/QData/{name}.tab  (and .dat)
+--
+-- The App:readDataFile override installed by TerminalTriage/Lua/app.lua checks
+-- these directories automatically for every sprite sheet request, so listing names
+-- in sprite_mapping is optional documentation — the filesystem check is implicit.
+--
+--   sprite_mapping = {
+--     Panel02V = "Graphics/Data/Panel02V.tab",   -- replaces hospital bottom panel
+--     Req05V   = "Graphics/QData/Req05V.tab",    -- replaces hire dialog sprites
+--   }
+--
+-- Leave tables empty until actual replacement files are ready.
+file_mapping   = {}
+sprite_mapping = {}
 
