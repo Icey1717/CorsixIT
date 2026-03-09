@@ -1,3 +1,43 @@
+## [2026-03-09] CorsixIT-6ph.1.8 + CorsixIT-6ph.1.9 - Developer workflow docs and bootstrap smoke-test checklist
+
+**Beads:** CorsixIT-6ph.1.8 (Document bootstrap workflow) + CorsixIT-6ph.1.9 (Smoke-test checklist)
+
+**What was done:**
+
+**CorsixIT-6ph.1.8 — Developer workflow documentation**
+Substantially expanded the `Development Workflow` section of `TerminalTriage/README.md` to cover:
+- First-time setup steps (repo layout, config, launcher config)
+- Explicit daily iteration loop with the mod-override pattern
+- How to add a mod override (where to place the file and how the patched `corsixth.require` resolves it)
+- Running the unit test suite (Terminal Triage and CorsixTH baseline commands)
+- A detailed **Transition to Standalone Packaging** subsection explaining:
+  - Current architecture dependency on `../../CorsixTH/Lua/` relative paths
+  - Which files change (stubs + `app.lua`) vs. stay the same (launchers, `App:getFullPath`, `config.txt`)
+  - Recommended future installer approach (patch paths at install time or via config key)
+
+**CorsixIT-6ph.1.9 — Bootstrap smoke-test checklist**
+Created `TerminalTriage/SMOKE_TEST.md` with a reusable 6-section checklist:
+1. Pre-flight (config, executable, unit tests)
+2. Startup (no Lua error, main menu loads)
+3. Isolated Config (saves/screenshots in mod directory, not base CorsixTH)
+4. Alternate-Root Path Resolution (Levels, Campaigns, language overrides)
+5. Custom Campaign Loading (campaign listed, level starts without error)
+6. Graphics Override (deferred to Phase 3/4; includes note on sprite sheet limitation)
+7. Fallback Require (hospital world loads, no "module not found" error)
+
+Pass criteria: sections 1–4 and 6 (fallback require) for bootstrap milestone; section 5 (graphics) deferred.
+
+**Files updated:**
+- `TerminalTriage/README.md` — expanded Development Workflow section; added `SMOKE_TEST.md` link to See Also
+
+**Files created:**
+- `TerminalTriage/SMOKE_TEST.md` — reusable bootstrap acceptance checklist
+
+**Test results:**
+- Terminal Triage: 43/43 passing ✓ (no change)
+
+---
+
 ## [2026-03-08] CorsixIT-6ph.1.1 - Define Terminal Triage package layout
 
 **Bead:** CorsixIT-6ph.1.1 (child of CorsixIT-6ph.1 - Bootstrap alternate Lua-root mod package)

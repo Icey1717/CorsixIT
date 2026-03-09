@@ -74,15 +74,97 @@ The `--lua-dir` flag redirects CorsixTH to load all Lua content from the mod's o
 
 ## Development Workflow
 
-For active development inside the CorsixTH repository:
+### In-Repo Iteration (primary workflow)
 
-1. Work directly in the `TerminalTriage\` directory in this repo.
-2. Copy `config.txt.template` to `config.txt` and configure your Theme Hospital path.
-3. Launch using the launchers above, pointing at this directory.
-4. CorsixTH will load Lua from `TerminalTriage\Lua\`, which starts minimal and grows as mod content is added.
-5. Once a feature is stable, it stays in `TerminalTriage\` - no changes are made to the base `CorsixTH\` tree.
+Terminal Triage is developed inside the CorsixTH source repository so that the
+mod Lua can be rapidly iterated against the live engine without a separate
+installation step.
 
-This keeps Terminal Triage isolated so upstream CorsixTH updates do not conflict with mod changes.
+**First-time setup**
+
+1. Clone (or pull) the CorsixIT repository — `TerminalTriage\` and `CorsixTH\`
+   must sit side-by-side in the same directory.
+2. Copy `config.txt.template` → `config.txt` and set `theme_hospital_install`.
+3. Edit the launcher (`launch.bat` / `launch.sh`) to set `CORSIXTH_EXE` if
+   CorsixTH is not on your PATH.
+
+**Daily iteration loop**
+
+1. Edit Lua files in `TerminalTriage\Lua\` (or add new override files).
+2. Launch via `launch.bat` / `launch.sh` (or the manual command above).
+3. Test changes in-game; the `--lua-dir` flag means no installation step is needed.
+4. Run the unit tests (see **Running Tests** below) before committing.
+5. Commit to the repository — `TerminalTriage\` is version-controlled alongside
+   the engine source, which makes it easy to keep in sync with engine changes.
+
+> **Rule**: never edit files under `CorsixTH\` to make Terminal Triage work.
+> All mod logic lives exclusively in `TerminalTriage\`.  If a base-engine
+> limitation is discovered, document it as a new bead rather than patching the
+> engine in-place.
+
+**Adding a mod override**
+
+To replace a base CorsixTH module with a mod-specific version:
+
+1. Identify the module path relative to `CorsixTH\Lua\` (e.g. `rooms\gp.lua`).
+2. Create the same relative path under `TerminalTriage\Lua\` (e.g.
+   `TerminalTriage\Lua\rooms\gp.lua`).
+3. The patched `corsixth.require` in `app.lua` will automatically prefer the
+   mod file over the base installation — no additional wiring is required.
+4. Add tests in `TerminalTriage\Luatest\spec\` covering the new behaviour.
+
+### Running Tests
+
+The test suite uses **busted 2.3.0** (Lua 5.4 + LuaRocks).
+
+```
+cd TerminalTriage\Luatest
+lua %APPDATA%\luarocks\bin\busted
+```
+
+On Linux/macOS:
+
+```bash
+cd TerminalTriage/Luatest
+lua ~/.luarocks/bin/busted
+```
+
+All tests must pass before merging.  The CorsixTH baseline tests also exist under
+`CorsixTH\Luatest\` — run them if you touch any shared logic:
+
+```
+cd CorsixTH\Luatest
+lua %APPDATA%\luarocks\bin\busted --lpath="../Lua/?.lua"
+```
+
+### Transition to Standalone Packaging
+
+> **Status:** future milestone.  The in-repo workflow is the only supported
+> approach for active development.
+
+When Terminal Triage is eventually distributed as a standalone package (outside
+the repository), the relative paths inside the bootstrapper stubs must be updated
+to point to the user's CorsixTH installation rather than `../../CorsixTH/Lua/`.
+
+**What changes for standalone**
+
+| File | In-repo path | Standalone path |
+|------|-------------|-----------------|
+| `utility.lua` | `../../CorsixTH/Lua/utility.lua` | `<corsixth-install>/CorsixTH/Lua/utility.lua` |
+| `strict.lua` | `../../CorsixTH/Lua/strict.lua` | `<corsixth-install>/CorsixTH/Lua/strict.lua` |
+| `class.lua` | `../../CorsixTH/Lua/class.lua` | `<corsixth-install>/CorsixTH/Lua/class.lua` |
+| `app.lua` (`base_lua_dir`) | `../../CorsixTH/Lua/` | `<corsixth-install>/CorsixTH/Lua/` |
+
+The recommended approach for a future installer is to patch these paths at
+install time (or read a `corsixth_lua_root` key from `config.txt`).  Until that
+work is done, all contributors must work in the in-repo layout.
+
+**What stays the same for standalone**
+
+- `App:getFullPath` override — correctly resolves to the package directory via
+  `debug.getinfo`, so Levels, Campaigns, and Graphics paths are always correct.
+- All `launch.bat` / `launch.sh` logic — no changes required.
+- `config.txt` — no structural changes required.
 
 ## Architecture Notes
 
@@ -115,5 +197,6 @@ This means the mod only needs to commit files it **actually overrides** — ever
 
 ## See Also
 
+- `SMOKE_TEST.md` - Bootstrap acceptance checklist (run after bootstrapper changes)
 - `docs\it-total-conversion-mod-gdd.md` - Full game design document
 - `docs\it-total-conversion-technical-plan.md` - Technical implementation plan
