@@ -8,16 +8,17 @@
 --     "custom_anim_01.dat",
 --   }
 --
--- FORMAT for sprite sheet overrides (via App:readDataFile override in app.lua):
--- sprite_mapping is a key-value table mapping original sprite names to replacement
--- filenames.  Override files (.tab + .dat pairs) must be placed under:
+-- FORMAT for sprite sheet overrides:
+-- When use_new_graphics = true, CorsixTH's graphics loader automatically
+-- registers the Graphics/ folder as a filesystem search path overlay via
+-- FileSystem:addSearchPath (backed by iso_filesystem::add_overlay_path in C++).
+-- This means any file placed under Graphics/Data/ or Graphics/QData/ will be
+-- found BEFORE the Theme Hospital ISO image or data directory.
+--
+-- Listing overrides in sprite_mapping is optional documentation only.
 --
 --   TerminalTriage/Graphics/Data/{name}.tab   (and .dat)
 --   TerminalTriage/Graphics/QData/{name}.tab  (and .dat)
---
--- The App:readDataFile override installed by TerminalTriage/Lua/app.lua checks
--- these directories automatically for every sprite sheet request, so listing names
--- in sprite_mapping is optional documentation — the filesystem check is implicit.
 --
 --   sprite_mapping = {
 --     Panel02V = "Graphics/Data/Panel02V.tab",   -- replaces hospital bottom panel

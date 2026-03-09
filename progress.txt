@@ -387,3 +387,27 @@ the call falls through to the original unchanged.
   Graphics/QData/ and they will be picked up automatically on next game launch
 
 
+
+## [2026-07-05] CorsixIT-6ph.4.1 (revised) - Replace Lua monkey-patch with proper C++ hook
+
+Replaced App:readDataFile Lua monkey-patch with proper C++ hook in iso_filesystem.
+
+C++ changes (iso_fs.h + iso_fs.cpp):
+- Added overlay_paths_ member and add_overlay_path()/get_overlay_paths() methods
+
+Lua binding (th_lua_iso.cpp):
+- Added l_isofs_add_search_path -> provider:addSearchPath(path)
+- Updated readContents and fileExists to check overlay paths before ISO
+
+FileSystem Lua (filesystem.lua):
+- Added FileSystem:addSearchPath(path) for both ISO and directory modes
+- readContents checks overlay_paths before normal root in directory mode
+
+Auto-registration (graphics.lua):
+- Graphics:_load now calls fs:addSearchPath(graphics_folder) when use_new_graphics=true
+- Sprites in TerminalTriage/Graphics/Data/ and QData/ are found automatically
+
+Mod cleanup (TerminalTriage/Lua/app.lua):
+- Removed 32-line App:readDataFile monkey-patch entirely
+
+Tests: 114/114 Terminal Triage, 63/63 CorsixTH baseline (VIP flaky excluded)

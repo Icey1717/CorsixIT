@@ -561,6 +561,14 @@ bool iso_filesystem::get_file_data(file_handle iFile, uint8_t* pBuffer) {
 
 std::string_view iso_filesystem::get_error() const { return error; }
 
+void iso_filesystem::add_overlay_path(const std::string& path) {
+  overlay_paths_.push_back(path);
+}
+
+const std::vector<std::string>& iso_filesystem::get_overlay_paths() const {
+  return overlay_paths_;
+}
+
 bool iso_filesystem::seek_to_sector(uint32_t iSector) {
   int res = std::fseek(raw_file.get(), sector_size * static_cast<long>(iSector),
                        SEEK_SET);

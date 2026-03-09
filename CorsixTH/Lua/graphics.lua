@@ -121,6 +121,12 @@ function Graphics:Graphics(app, good_install_dir, charset)
     end
   end
   self.custom_graphics_folder = graphics_folder
+
+  -- Register as a data search path so sprite-sheet overrides placed under
+  -- Graphics/Data/ and Graphics/QData/ are picked up by App:readDataFile.
+  if graphics_folder and self.app.fs then
+    self.app.fs:addSearchPath(graphics_folder)
+  end
 end
 
 function Graphics:_loadPalettes(good_install_dir)

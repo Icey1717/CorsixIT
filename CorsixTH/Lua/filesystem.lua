@@ -167,6 +167,18 @@ function FileSystem:readContents(virtual_path, ...)
     return self.provider:readContents(virtual_path)
   end
 
+  -- Check overlay search paths before the normal root (directory mode only).
+  if self.overlay_paths then
+    for _, overlay in ipairs(self.overlay_paths) do
+      local f = io.open(overlay .. virtual_path, "rb")
+      if f then
+        local data = f:read("*a")
+        f:close()
+        return data
+      end
+    end
+  end
+
   local file, err = self:_getFilePath(virtual_path)
   if not file then
     return file, err
@@ -178,6 +190,23 @@ function FileSystem:readContents(virtual_path, ...)
   local data = f:read("*a")
   f:close()
   return data
+end
+
+--! Register a real-filesystem directory to search before the normal root.
+--
+-- For ISO mode the overlay is passed to the C++ provider so that file reads
+-- check the real filesystem directory before the ISO image. For directory
+-- mode the overlay is stored locally and checked in FileSystem:readContents.
+--
+--!param path (string) path to a directory on the real filesystem (with or
+-- without a trailing path separator).
+function FileSystem:addSearchPath(path)
+  if self.provider then
+    self.provider:addSearchPath(path)
+  else
+    if not self.overlay_paths then self.overlay_paths = {} end
+    self.overlay_paths[#self.overlay_paths + 1] = path
+  end
 end
 
 --! Determines if the given path points to a real file.

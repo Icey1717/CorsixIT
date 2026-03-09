@@ -172,12 +172,15 @@ end)
 
 -- ── Sprite sheet readDataFile override ───────────────────────────────────────
 --
--- Tests for App:readDataFile override installed by TerminalTriage/Lua/app.lua.
--- The override checks TerminalTriage/Graphics/{dir}/{filename} before falling
--- back to the original Theme Hospital filesystem.
+-- Tests for sprite sheet override support in TerminalTriage.
+-- Files placed under TerminalTriage/Graphics/{dir}/ are found by CorsixTH's
+-- FileSystem:readContents because Graphics:_load calls fs:addSearchPath on
+-- the graphics folder when use_new_graphics = true.  The C++ iso_filesystem
+-- provider checks overlay paths (added via addSearchPath) before consulting
+-- the Theme Hospital ISO image.
 --
--- We simulate the override logic here (same pattern as patched_getFullPath above)
--- so the tests run without the full CorsixTH C runtime.
+-- We simulate the overlay lookup logic here so the tests run without the full
+-- CorsixTH C runtime.
 
 describe("App:readDataFile sprite sheet override", function()
 
@@ -286,7 +289,7 @@ describe("Graphics override capability status", function()
     end
   end)
 
-  it("sprite sheet override IS supported via App:readDataFile override in app.lua", function()
+  it("sprite sheet override IS supported via FileSystem:addSearchPath in graphics.lua", function()
     local graphics_dir = mod_root .. "Graphics" .. pathsep
     local result = assert(exec_config_file(graphics_dir .. "file_mapping.txt"))
     assert.equal("directory", lfs.attributes(graphics_dir .. "Data",  "mode"),

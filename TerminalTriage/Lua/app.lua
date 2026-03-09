@@ -114,36 +114,3 @@ App.getFullPath = function(self, folders, trailing_slash)
   local ending = trailing_slash and pathsep or ""
   return _mod_root .. table.concat(folders, pathsep) .. ending
 end
-
--- Override App:readDataFile to check TerminalTriage/Graphics/{dir}/ for custom
--- sprite sheet files before falling back to the original Theme Hospital data.
---
--- For every sprite sheet request (e.g. dir="Data", name="Panel02V.tab"), this
--- override probes TerminalTriage/Graphics/{dir}/{filename} first. If a custom
--- file exists there, it is returned directly without touching the Theme Hospital
--- FileSystem object. Otherwise the call falls through to the original method.
---
--- To replace a sprite sheet:
---   1. Place the custom .tab + .dat pair under TerminalTriage/Graphics/Data/ or
---      TerminalTriage/Graphics/QData/ (matching the dir argument used in-game).
---   2. Optionally document it in Graphics/file_mapping.txt under sprite_mapping.
---
--- Bitmap and Levels dirs are excluded — they have dedicated paths in the base.
-local _orig_readDataFile   = App.readDataFile
-local _custom_sprites_root = _mod_root .. "Graphics" .. pathsep
-
-App.readDataFile = function(self, dir, filename)
-  if dir and dir ~= "Bitmap" and dir ~= "Levels" and filename then
-    local custom_path = _custom_sprites_root .. dir .. pathsep .. filename
-    local f = io.open(custom_path, "rb")
-    if f then
-      local data = f:read("*a")
-      f:close()
-      if data:sub(1, 3) == "RNC" then
-        data = assert(rnc.decompress(data))
-      end
-      return data
-    end
-  end
-  return _orig_readDataFile(self, dir, filename)
-end

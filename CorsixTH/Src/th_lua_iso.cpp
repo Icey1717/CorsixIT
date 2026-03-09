@@ -90,6 +90,18 @@ int l_isofs_is_valid_root(lua_State* L) {
 int l_isofs_file_exists(lua_State* L) {
   iso_filesystem* pSelf = luaT_testuserdata<iso_filesystem>(L);
   const char* sFilename = luaL_checkstring(L, 2);
+
+  // Check overlay paths first
+  for (const auto& overlay : pSelf->get_overlay_paths()) {
+    std::string full_path = overlay + sFilename;
+    std::FILE* f = std::fopen(full_path.c_str(), "rb");
+    if (f) {
+      std::fclose(f);
+      lua_pushboolean(L, true);
+      return 1;
+    }
+  }
+
   iso_filesystem::file_handle iFile = pSelf->find_file(sFilename);
   if (!iso_filesystem::is_handle_good(iFile)) {
     lua_pushnil(L);
@@ -142,6 +154,23 @@ int l_isofs_file_offsets(lua_State* L) {
 int l_isofs_read_contents(lua_State* L) {
   iso_filesystem* pSelf = luaT_testuserdata<iso_filesystem>(L);
   const char* sFilename = luaL_checkstring(L, 2);
+
+  // Check overlay paths first; the first overlay that contains the file wins.
+  for (const auto& overlay : pSelf->get_overlay_paths()) {
+    std::string full_path = overlay + sFilename;
+    std::FILE* f = std::fopen(full_path.c_str(), "rb");
+    if (f) {
+      std::fseek(f, 0, SEEK_END);
+      long size = std::ftell(f);
+      std::rewind(f);
+      void* pBuffer = lua_newuserdata(L, static_cast<size_t>(size));
+      size_t read = std::fread(pBuffer, 1, static_cast<size_t>(size), f);
+      std::fclose(f);
+      lua_pushlstring(L, static_cast<const char*>(pBuffer), read);
+      return 1;
+    }
+  }
+
   iso_filesystem::file_handle iFile = pSelf->find_file(sFilename);
   if (!iso_filesystem::is_handle_good(iFile)) {
     lua_pushnil(L);
@@ -175,6 +204,13 @@ int l_isofs_list_files(lua_State* L) {
   return 1;
 }
 
+int l_isofs_add_search_path(lua_State* L) {
+  iso_filesystem* pSelf = luaT_testuserdata<iso_filesystem>(L);
+  const char* sPath = luaL_checkstring(L, 2);
+  pSelf->add_overlay_path(sPath);
+  return 0;
+}
+
 }  // namespace
 
 void lua_register_iso_fs(const lua_register_state* pState) {
@@ -186,4 +222,5 @@ void lua_register_iso_fs(const lua_register_state* pState) {
   lcb.add_function(l_isofs_read_contents, "readContents");
   lcb.add_function(l_isofs_list_files, "listFiles");
   lcb.add_function(l_isofs_is_valid_root, "isValidRoot");
+  lcb.add_function(l_isofs_add_search_path, "addSearchPath");
 }

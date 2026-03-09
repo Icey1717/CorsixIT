@@ -107,6 +107,20 @@ class iso_filesystem {
   */
   bool get_file_data(file_handle iFile, uint8_t* pBuffer);
 
+  //! Register a real-filesystem directory to search before the ISO image.
+  /*!
+      Overlay directories are checked in registration order. The first overlay
+      directory that contains a matching file wins. If no overlay provides the
+      file, the ISO image is consulted as usual.
+
+      \param path Absolute or relative path to a directory (with or without a
+        trailing path separator).
+  */
+  void add_overlay_path(const std::string& path);
+
+  //! Return the list of registered overlay directories.
+  const std::vector<std::string>& get_overlay_paths() const;
+
  private:
   struct file_metadata {
     std::string path;
@@ -117,6 +131,7 @@ class iso_filesystem {
   std::unique_ptr<std::FILE, int (*)(std::FILE*)> raw_file;
   std::string error{};
   std::vector<file_metadata> files;
+  std::vector<std::string> overlay_paths_;
   long sector_size{min_sector_size};
   char path_seperator;
 
