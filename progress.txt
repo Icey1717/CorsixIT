@@ -1,3 +1,28 @@
+## [2026-03-09] CorsixIT-6ph.5.1 + full Lua tree migration - Remove grim reaper & replace bootstrap architecture
+
+**Beads:** CorsixIT-6ph.5.1 (Remove grim reaper death sequence)
+
+**What was done:**
+
+**CorsixIT-6ph.5.1 — Remove grim reaper**
+Created `TerminalTriage/Lua/humanoid_actions/die.lua` override that replaces the two-path
+death sequence (heaven / grim reaper + lava hole) with a simple despawn after the patient
+falls off the trolley. Preserves `permanent"action_die_tick"` and `permanent"action_die_tick_reaper"`
+keys for save/load compatibility. 11 new tests added to verify the override behaviour.
+
+**Lua tree migration**
+Replaced the fragile bootstrap fallback architecture (patched corsixth.require, getFullPath
+override, loadLuaFolder merge, base_config.lua stub, strings.lua two-pass override) with a
+full copy of `CorsixTH/Lua/` into `TerminalTriage/Lua/`. With `--lua-dir` pointing at the
+mod's Lua directory and all engine files now present locally, no patching is needed:
+- `getFullPath` resolves correctly because app.lua now lives at `TerminalTriage/Lua/app.lua`
+- corsixth.require finds all files directly in `TerminalTriage/Lua/`
+- Mod overrides sit alongside engine files in-tree (die.lua, english_terminal_triage.lua)
+
+**Commits:** 1b75fe83 (grim reaper removal), 9076944e (launch fixes), 58c08ab6 (lfs.dir fix), 7afce3be (full Lua tree migration)
+
+---
+
 ## [2026-03-09] CorsixIT-6ph.1.8 + CorsixIT-6ph.1.9 - Developer workflow docs and bootstrap smoke-test checklist
 
 **Beads:** CorsixIT-6ph.1.8 (Document bootstrap workflow) + CorsixIT-6ph.1.9 (Smoke-test checklist)
