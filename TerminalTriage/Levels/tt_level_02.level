@@ -1,0 +1,111 @@
+-- Terminal Triage: Level 02 — Neighborhood Repair Shop
+-- Focus: diagnostics, staffing, first real win conditions.
+%Name = "Neighborhood Repair Shop"
+%MapFile = "tt_level_02.map"
+
+%LevelBriefingTable.en = "A small storefront in the suburbs: your first proper repair operation.Customers are arriving with a wider variety of device problems. You'll need to set up a proper triage desk, expand your diagnostic tools, and hire enough bench technicians to keep turnaround times short.Get a reputation of at least 700 and bank $50,000 to impress your first round of investors.Good luck — the queue is already out the door."
+
+%LevelDebriefingTable.en = "Impressive work! The neighborhood repair shop is turning a profit and customers keep coming back.Word travels fast in tech circles. Time to scale up."
+
+-- ── Town properties ──────────────────────────────────────────────────────────
+-- Starting cash / interest rate (centiprocent: 300 = 3%)
+#town.StartCash.InterestRate 50000 300
+
+#gbv.SodaPrice 20
+
+-- ── Research configuration ───────────────────────────────────────────────────
+#gbv.ResearchPointsDivisor 5
+#gbv.StartRating 100
+
+-- ── Disease / expertise configuration ────────────────────────────────────────
+-- Known=1 means available immediately; Known=0 needs research.
+-- RschReqd: research points required to unlock.
+-- MaxDiagDiff: diagnostic difficulty (higher = harder to diagnose).
+#expertise[1].Known.RschReqd 1 0 GENERAL_PRACTICE
+
+-- Hardware issues (Known from the start)
+#expertise[2].Known.RschReqd.MaxDiagDiff  1  5000 200 HAIRYITUS
+#expertise[3].Known.RschReqd.MaxDiagDiff  1  8000 300 BLOATY_HEAD
+#expertise[4].Known.RschReqd.MaxDiagDiff  1  5000 150 UNCOMMON_COLD
+
+-- Software / network issues (require light research)
+#expertise[5].Known.RschReqd.MaxDiagDiff  0 10000 250 SLEEPING_ILLNESS
+#expertise[6].Known.RschReqd.MaxDiagDiff  0 12000 350 BALDNESS
+#expertise[7].Known.RschReqd.MaxDiagDiff  0 15000 400 JELLYITUS
+#expertise[8].Known.RschReqd.MaxDiagDiff  0 15000 300 DISCRETE_ITCHING
+
+-- Diagnosis rooms
+#expertise[37].Known.RschReqd 1 10000 I_D_STANDARD  DIAGNOSIS
+#expertise[38].Known.RschReqd 1 10000 I_D_WARD      DIAGNOSIS
+#expertise[39].Known.RschReqd 0 20000 I_D_CARDIO    DIAGNOSIS
+
+-- ── Objects ──────────────────────────────────────────────────────────────────
+#objects[9].StartAvail.StartStrength.AvailableForLevel  1  8 1 Inflator Machine
+#objects[13].StartAvail.StartStrength.AvailableForLevel 1 13 1 Cardiogram
+#objects[25].StartAvail.StartStrength.AvailableForLevel 1  8 1 Hair restorer
+#objects[30].StartAvail.StartStrength.AvailableForLevel 1 12 1 Operating Table
+#objects[37].StartAvail.StartStrength.AvailableForLevel 1  0 1 Projector
+#objects[47].StartAvail.StartStrength.AvailableForLevel 0  7 1 Jellyitus Moulding Machine
+
+-- Visuals (diseases with visible symptoms affect sprite rendering)
+#visuals[0]   1 I_BLOATY_HEAD
+#visuals[1]  21 I_HAIRYITUS
+#visuals[2]  12 I_JELLYITUS
+#non_visuals[0] 1 I_UNCOMMON_COLD
+#non_visuals[1] 1 I_SLEEPING_ILLNESS
+#non_visuals[2] 12 I_BALDNESS
+#non_visuals[3] 5 I_DISCRETE_ITCHING
+
+-- ── Staff availability ───────────────────────────────────────────────────────
+#staff_levels[0].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate 0 5 4 2 2 10 10 10 10 5
+#staff_levels[1].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate 6 6 5 3 3 10 10 10 10 5
+
+#staff[0].MinSalary 60 Nurse
+#staff[1].MinSalary 75 Doctor
+#staff[2].MinSalary 25 Handyman
+#staff[3].MinSalary 20 Receptionist
+
+#gbv.SalaryAdd[3]  -30 Junior
+#gbv.SalaryAdd[4]   30 Doctor
+#gbv.SalaryAdd[5]   40 Surgeon
+#gbv.SalaryAdd[6]   30 Psychiatrist
+#gbv.SalaryAdd[7]  100 Consultant
+#gbv.SalaryAdd[8]   20 Researcher
+#gbv.SalaryAbilityDivisor 10
+
+#gbv.TrainingRate        40
+#gbv.AbilityThreshold[0] 75 Surgeon
+#gbv.AbilityThreshold[1] 60 Psychiatrist
+#gbv.AbilityThreshold[2] 45 Researcher
+#gbv.TrainingValue[0]    10 Projector
+#gbv.TrainingValue[1]    15 Skeleton
+#gbv.TrainingValue[2]    20 Bookcase
+
+-- ── Population ───────────────────────────────────────────────────────────────
+#popn[0].Month.Change  0   2
+#popn[1].Month.Change  6   5
+#popn[2].Month.Change 12   0
+#popn[3].Month.Change 18  10
+#popn[4].Month.Change 24  -8
+#popn[5].Month.Change 30   5
+
+-- ── Win / Lose conditions ─────────────────────────────────────────────────────
+-- Criteria: 1=Reputation 2=Balance 3=%Handled 4=%Cured 5=%Killed 6=HospValue
+-- MaxMin:   1=≥  0=≤
+#win_criteria[0].Criteria.MaxMin.Value.Group.Bound  1  1  700     1  0
+#win_criteria[1].Criteria.MaxMin.Value.Group.Bound  2  1  50000   1  0
+#win_criteria[2].Criteria.MaxMin.Value.Group.Bound  3  1  70      1  0
+#win_criteria[3].Criteria.MaxMin.Value.Group.Bound  0  0  0       0  0
+#win_criteria[4].Criteria.MaxMin.Value.Group.Bound  0  0  0       0  0
+#win_criteria[5].Criteria.MaxMin.Value.Group.Bound  0  0  0       0  0
+
+#lose_criteria[0].Criteria.MaxMin.Value.Group.Bound  1  0  400    1  450
+#lose_criteria[1].Criteria.MaxMin.Value.Group.Bound  2  0 -10000  2  -5000
+#lose_criteria[2].Criteria.MaxMin.Value.Group.Bound  0  0  0      0  0
+#lose_criteria[3].Criteria.MaxMin.Value.Group.Bound  0  0  0      0  0
+#lose_criteria[4].Criteria.MaxMin.Value.Group.Bound  0  0  0      0  0
+#lose_criteria[5].Criteria.MaxMin.Value.Group.Bound  0  0  0      0  0
+
+-- ── Competitors ──────────────────────────────────────────────────────────────
+#computer[12].Playing 1.Name CORSIX
+#computer[13].Playing 1.Name ROUJIN

@@ -1,0 +1,141 @@
+-- Terminal Triage: Level 03 — Student Tech Hub
+-- Focus: high volume, software issues, introduce customer support lab (psychiatry).
+%Name = "Student Tech Hub"
+%MapFile = "tt_level_03.map"
+
+%LevelBriefingTable.en = "University campuses are a goldmine for tech repair shops — and a nightmare to manage.You're dealing with spilled-coffee laptops, ransomwear infections, overheating gaming rigs, and Wi-Fi configuration nightmares. Volume is relentless and budgets are tight.Expand your diagnostic lab, open a Customer Support wing for user-error cases, and keep devices flowing through your workshop.Earn a reputation of at least 700, accumulate $100,000 in the bank, and fix at least 200 devices to prove you can handle the load."
+
+%LevelDebriefingTable.en = "Excellent throughput! You kept the student queue moving and earned some serious brand trust.The corporate sector is watching. Brace yourself for the next assignment."
+
+-- ── Town properties ──────────────────────────────────────────────────────────
+#town.StartCash.InterestRate 40000 600
+
+#gbv.SodaPrice 20
+
+-- ── Research configuration ───────────────────────────────────────────────────
+#gbv.ResearchPointsDivisor 5
+#gbv.StartRating 80
+
+-- ── Disease / expertise configuration ────────────────────────────────────────
+#expertise[1].Known.RschReqd 1 0 GENERAL_PRACTICE
+
+-- Hardware issues
+#expertise[2].Known.RschReqd.MaxDiagDiff  1  5000 200 HAIRYITUS
+#expertise[3].Known.RschReqd.MaxDiagDiff  1  8000 300 BLOATY_HEAD
+#expertise[4].Known.RschReqd.MaxDiagDiff  1  5000 150 UNCOMMON_COLD
+#expertise[5].Known.RschReqd.MaxDiagDiff  1 10000 250 BROKEN_BONES
+
+-- Software / OS issues (available from start)
+#expertise[6].Known.RschReqd.MaxDiagDiff  1 10000 300 SLEEPING_ILLNESS
+#expertise[7].Known.RschReqd.MaxDiagDiff  1  8000 200 BALDNESS
+
+-- Network / software issues (require light research)
+#expertise[8].Known.RschReqd.MaxDiagDiff  0 15000 350 JELLYITUS
+#expertise[9].Known.RschReqd.MaxDiagDiff  0 15000 300 DISCRETE_ITCHING
+#expertise[10].Known.RschReqd.MaxDiagDiff 0 15000 350 SPARE_RIBS
+#expertise[11].Known.RschReqd.MaxDiagDiff 0 15000 300 KIDNEY_BEANS
+
+-- Behavioral / user-error issues (require customer support lab research)
+#expertise[12].Known.RschReqd.MaxDiagDiff 0 20000 500 MULTIPLE_TV_PERSONALITIES
+#expertise[13].Known.RschReqd.MaxDiagDiff 0 20000 450 SLACK_TONGUE
+#expertise[14].Known.RschReqd.MaxDiagDiff 0 15000 300 BROKEN_WIND
+#expertise[15].Known.RschReqd.MaxDiagDiff 0 20000 400 BROKEN_HEART
+
+-- Diagnosis rooms
+#expertise[37].Known.RschReqd 1 10000 I_D_STANDARD    DIAGNOSIS
+#expertise[38].Known.RschReqd 1 10000 I_D_WARD        DIAGNOSIS
+#expertise[39].Known.RschReqd 0 20000 I_D_CARDIO      DIAGNOSIS
+#expertise[43].Known.RschReqd 0 25000 I_D_SHRINK      DIAGNOSIS
+
+-- ── Objects ──────────────────────────────────────────────────────────────────
+#objects[9].StartAvail.StartStrength.AvailableForLevel  1  8 1 Inflator Machine
+#objects[13].StartAvail.StartStrength.AvailableForLevel 1 13 1 Cardiogram
+#objects[24].StartAvail.StartStrength.AvailableForLevel 0  9 1 Cast Remover
+#objects[25].StartAvail.StartStrength.AvailableForLevel 1  8 1 Hair restorer
+#objects[26].StartAvail.StartStrength.AvailableForLevel 0 10 1 Slicer for slack tongues
+#objects[30].StartAvail.StartStrength.AvailableForLevel 1 12 1 Operating Table
+#objects[37].StartAvail.StartStrength.AvailableForLevel 1  0 1 Projector
+#objects[40].StartAvail.StartStrength.AvailableForLevel 0  1 1 Research Computer
+#objects[41].StartAvail.StartStrength.AvailableForLevel 0  1 1 Chemical Mixer
+#objects[42].StartAvail.StartStrength.AvailableForLevel 0 10 1 Blood Machine
+#objects[46].StartAvail.StartStrength.AvailableForLevel 0  8 1 Electrolysis Machine
+#objects[47].StartAvail.StartStrength.AvailableForLevel 0  7 1 Jellyitus Moulding Machine
+
+-- Visuals
+#visuals[0]   1 I_BLOATY_HEAD
+#visuals[1]  21 I_HAIRYITUS
+#visuals[2]  11 I_BROKEN_BONES
+#visuals[3]  12 I_JELLYITUS
+#visuals[4]  11 I_SLACK_TONGUE
+#non_visuals[0] 1 I_UNCOMMON_COLD
+#non_visuals[1] 1 I_SLEEPING_ILLNESS
+#non_visuals[2] 12 I_BALDNESS
+#non_visuals[3] 5 I_DISCRETE_ITCHING
+#non_visuals[4] 19 I_SPARE_RIBS
+#non_visuals[5] 31 I_KIDNEY_BEANS
+#non_visuals[6] 3 I_BROKEN_WIND
+#non_visuals[7] 25 I_BROKEN_HEART
+#non_visuals[8] 1 I_MULTIPLE_TV_PERSONALITIES
+
+-- ── Staff availability ───────────────────────────────────────────────────────
+#staff_levels[0].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate  0 6 5 2 2 10 10 10 10 5
+#staff_levels[1].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate  6 7 6 3 3 10 10 10 10 5
+#staff_levels[2].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate 12 6 8 5 4 10 10 10 10 5
+
+#staff[0].MinSalary 60 Nurse
+#staff[1].MinSalary 75 Doctor
+#staff[2].MinSalary 25 Handyman
+#staff[3].MinSalary 20 Receptionist
+
+#gbv.SalaryAdd[3]  -30 Junior
+#gbv.SalaryAdd[4]   30 Doctor
+#gbv.SalaryAdd[5]   40 Surgeon
+#gbv.SalaryAdd[6]   30 Psychiatrist
+#gbv.SalaryAdd[7]  100 Consultant
+#gbv.SalaryAdd[8]   20 Researcher
+#gbv.SalaryAbilityDivisor 10
+
+#gbv.TrainingRate        40
+#gbv.AbilityThreshold[0] 75 Surgeon
+#gbv.AbilityThreshold[1] 60 Psychiatrist
+#gbv.AbilityThreshold[2] 45 Researcher
+#gbv.TrainingValue[0]    10 Projector
+#gbv.TrainingValue[1]    15 Skeleton
+#gbv.TrainingValue[2]    20 Bookcase
+
+-- ── Population (high volume with seasonal spikes) ─────────────────────────────
+#popn[0].Month.Change  0   3
+#popn[1].Month.Change  6  10
+#popn[2].Month.Change 12 -15
+#popn[3].Month.Change 14   0
+#popn[4].Month.Change 18  15
+#popn[5].Month.Change 24 -20
+#popn[6].Month.Change 26   0
+#popn[7].Month.Change 30  12
+
+-- ── Emergency surges (bulk device drop-offs) ─────────────────────────────────
+#emergency_control[0].StartMonth.EndMonth.Min.Max.Illness.PercWin.Bonus  6 10  4  6  3  75 1500
+#emergency_control[1].StartMonth.EndMonth.Min.Max.Illness.PercWin.Bonus 18 22  6  9  2  75 2000
+#emergency_control[2].StartMonth.EndMonth.Min.Max.Illness.PercWin.Bonus 30 34  8 12 11  75 2500
+
+-- ── Win / Lose conditions ─────────────────────────────────────────────────────
+-- Criteria: 1=Reputation 2=Balance 3=%Handled 4=%Cured 5=%Killed 6=HospValue
+-- MaxMin:   1=≥  0=≤
+#win_criteria[0].Criteria.MaxMin.Value.Group.Bound  1  1  700     1  0
+#win_criteria[1].Criteria.MaxMin.Value.Group.Bound  2  1  100000  1  0
+#win_criteria[2].Criteria.MaxMin.Value.Group.Bound  3  1  75      1  0
+#win_criteria[3].Criteria.MaxMin.Value.Group.Bound  4  1  200     1  0
+#win_criteria[4].Criteria.MaxMin.Value.Group.Bound  0  0  0       0  0
+#win_criteria[5].Criteria.MaxMin.Value.Group.Bound  0  0  0       0  0
+
+#lose_criteria[0].Criteria.MaxMin.Value.Group.Bound  1  0  400    1  450
+#lose_criteria[1].Criteria.MaxMin.Value.Group.Bound  2  0 -15000  2 -10000
+#lose_criteria[2].Criteria.MaxMin.Value.Group.Bound  5  1  20     3  15
+#lose_criteria[3].Criteria.MaxMin.Value.Group.Bound  0  0  0      0  0
+#lose_criteria[4].Criteria.MaxMin.Value.Group.Bound  0  0  0      0  0
+#lose_criteria[5].Criteria.MaxMin.Value.Group.Bound  0  0  0      0  0
+
+-- ── Competitors ──────────────────────────────────────────────────────────────
+#computer[12].Playing 1.Name CORSIX
+#computer[13].Playing 1.Name ROUJIN
+#computer[14].Playing 1.Name EDVIN

@@ -261,3 +261,63 @@ Proved the graphics override path resolves correctly from the mod package. The k
 - `fax.epidemic_result` fields use dot notation rather than bracket subscripts for consistent style
 - Campaign briefing texts (level intro letters) are Phase 3 content and not in scope for Phase 2
 
+---
+
+## Session 3 — Phase 3: Campaign & Level Content (CorsixIT-6ph.3)
+
+**Date:** 2026-03-09
+**Bead:** CorsixIT-6ph.3 — Remap gameplay content and campaign to IT repair
+**Status:** Closed ✓
+
+### Summary
+
+Expanded the Terminal Triage campaign from a single stub level to a 3-level playable
+progression. All levels use CorsixTH internal IDs (stable) with IT-themed briefings and
+disease/room selections tuned to match the Phase 2 string overrides.
+
+### Files Changed
+
+- `TerminalTriage/Campaigns/terminal_triage.campaign`
+  - Added levels 2 and 3 to the `levels` table
+  - Updated winning text to IT-themed wording
+
+- `TerminalTriage/Levels/tt_level_01.level` — unchanged (tutorial already solid)
+
+- `TerminalTriage/Levels/tt_level_02.level` — NEW: Neighborhood Repair Shop
+  - 7 diseases (3 Known, 4 researchable): HAIRYITUS, BLOATY_HEAD, UNCOMMON_COLD,
+    SLEEPING_ILLNESS, BALDNESS, JELLYITUS, DISCRETE_ITCHING
+  - 3 diagnosis rooms: I_D_STANDARD, I_D_WARD, I_D_CARDIO
+  - Win: Reputation ≥ 700, Balance ≥ $50,000, % Handled ≥ 70%
+  - Lose: Reputation < 400, Balance < -$10,000
+  - Map: Holby.map (copy → tt_level_02.map)
+
+- `TerminalTriage/Levels/tt_level_03.level` — NEW: Student Tech Hub
+  - 14 diseases (6 Known, 8 researchable): hardware + software + behavioral issues,
+    including MULTIPLE_TV_PERSONALITIES (Admin Complex) for Customer Support Lab
+  - 4 diagnosis rooms: adds I_D_SHRINK for customer support diagnosis
+  - 3 emergency surge events (bulk device drop-offs)
+  - Seasonal population swings (student intake peaks)
+  - Win: Reputation ≥ 700, Balance ≥ $100,000, % Handled ≥ 75%, cured ≥ 200
+  - Lose: Reputation < 400, Balance < -$15,000, Death rate > 20%
+  - Map: Tufflook.map (copy → tt_level_03.map)
+
+- `TerminalTriage/Luatest/spec/level_content_spec.lua` — NEW: 26 tests
+  - Campaign references ≥ 3 levels; all level and map files exist
+  - Level 1: no win conditions (tutorial), ≥ 3 diseases, IT briefing
+  - Level 2: ≥ 5 diseases, ≥ 2 diagnosis rooms, reputation win condition
+  - Level 3: ≥ 10 diseases, ≥ 3 diagnosis rooms, cash + death-rate conditions
+  - Cross-level: Level 3 has more diseases and win criteria than Level 2
+  - Bug fixed: test helper used `ipairs` on 0-indexed criteria tables; switched to `pairs`
+
+**Test results:**
+- Terminal Triage: 105/105 passing ✓ (was 79 before this session)
+- CorsixTH baseline: 63/63 passing ✓
+
+**Key decisions:**
+- Maps are copied from CorsixTH/Campaigns/ (binary, 163948 bytes) — reuse existing town layouts
+- Win condition criteria use CorsixTH's 1-6 integer scheme: 1=Reputation, 2=Balance,
+  3=%Handled, 4=%Cured, 5=%Killed, 6=HospValue (documented in finisham.level header)
+- Level files use 0-based indices for #win_criteria/#lose_criteria arrays; Lua `pairs`
+  (not `ipairs`) required when iterating these in test helpers
+
+

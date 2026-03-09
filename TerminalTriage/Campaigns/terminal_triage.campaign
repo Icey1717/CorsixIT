@@ -1,4 +1,4 @@
--- Terminal Triage Campaign
+﻿-- Terminal Triage Campaign
 -- This is a placeholder campaign file. Replace with actual level references in Phase 2.
 name = "Terminal Triage"
 
@@ -18,11 +18,11 @@ movie = false
 
 levels = {
   "tt_level_01.level",
+  "tt_level_02.level",
+  "tt_level_03.level",
 }
 
-winning_text = "Congratulations! You have successfully completed Terminal Triage. " ..
-  "The tech world is a safer place thanks to you."
+winning_text = "Congratulations! You have mastered Terminal Triage. From a one-desk kiosk to a full-scale tech repair campus, your brand is legendary."
 
 winning_text_table = {}
-winning_text_table.en = "Congratulations! You have successfully completed Terminal Triage. " ..
-  "The tech world is a safer place thanks to you."
+winning_text_table.en = "Congratulations! You have mastered Terminal Triage. From a one-desk kiosk to a full-scale tech repair campus, your brand is legendary."
