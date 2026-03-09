@@ -922,3 +922,191 @@ totd_window.tips = {
   "Did you know you can assign Facilities Techs to specific zones? Just click the 'All Zones' text in their staff profile to cycle through them!",
 }
 
+-- ============================================================
+-- SECTION 20: Misc epidemic/outbreak overrides
+-- ============================================================
+
+misc.epidemics_off             = "Malware outbreaks are disabled. No new outbreaks will be created."
+misc.epidemics_on              = "Malware outbreaks are re-enabled."
+misc.epidemic_no_icon_to_toggle = "Unable to show/hide compromised icons - no active outbreaks that are not yet revealed."
+misc.epidemic_no_diseases      = "Cannot create malware outbreak - no spreading issues available."
+misc.epidemic_no_receptionist  = "Cannot create malware outbreak - no staffed service counter."
+
+-- ============================================================
+-- SECTION 21: Dynamic info epidemic overrides
+-- ============================================================
+
+dynamic_info.staff.actions.vaccine                      = "Patching a device"
+dynamic_info.patient.actions.epidemic_vaccinated        = "Issue neutralised - no longer spreading"
+dynamic_info.patient.actions.no_gp_available            = "Waiting for you to build a Triage Desk"
+
+-- ============================================================
+-- SECTION 22: PA subtitle announcements
+-- ============================================================
+
+subtitles = {
+  -- Cheat alerts
+  cheat001 = "Business administrator is running unauthorized tools!",
+  cheat002 = "Warning! An unsanctioned operator is running the shop!",
+  cheat003 = "Compliance alert! Compliance alert!",
+
+  -- Emergency (surge job) announcements — IT device issue names
+  emerg001 = "Staff announcement: incoming devices with Disk Overflow.",
+  emerg002 = "Staff announcement: devices with Crash Loop are on the way.",
+  emerg003 = "Staff announcement: incoming devices with Printer Diplomacy Failure.",
+  emerg004 = "Staff announcement: devices with Registry Rot on the way.",
+  emerg005 = "Staff announcement: incoming devices with Screen Splatter.",
+  emerg006 = "Staff announcement: devices with Wi-Fi Stage Fright arriving.",
+  emerg007 = "Staff announcement: incoming devices with Battery Balloon.",
+  emerg008 = "Staff announcement: devices with Cable Nesting on the way.",
+  emerg009 = "Staff announcement: incoming devices with Admin Complex.",
+  emerg010 = "Staff announcement: devices arriving with Thermal Meltdown.",
+  emerg011 = "Staff announcement: incoming devices with Notification Storm.",
+  emerg012 = "Staff announcement: incoming devices with Desktop Archaeology.",
+  emerg013 = "Staff announcement: devices with Ransomwear arriving.",
+  emerg014 = "Staff announcement: incoming devices with Tab Tsunami.",
+  emerg015 = "Staff announcement: incoming devices with Update Loop Fever.",
+  emerg016 = "Staff announcement: devices with Backup Mirage arriving.",
+  emerg017 = "Staff announcement: incoming devices with Static Discharge Syndrome.",
+  emerg018 = "Staff announcement: incoming devices with RAM Bloat.",
+  emerg019 = "Staff announcement: devices with Software Rot arriving.",
+  emerg020 = "Staff announcement: incoming devices with Driver Amnesia.",
+  emerg021 = "Staff announcement: devices arriving with Data Duplication.",
+  emerg022 = "Staff announcement: incoming devices with Privacy Spill.",
+  emerg023 = "Staff announcement: devices with Cloud Confusion incoming.",
+  emerg024 = "Staff announcement: incoming devices with Data Corruption.",
+  emerg025 = "Staff announcement: devices with Port Collapse arriving.",
+  emerg026 = "Staff announcement: incoming devices with Settings Labyrinth.",
+  emerg027 = "Staff announcement: incoming devices with Latency Gremlins.",
+  emerg028 = "Staff announcement: devices with Button Mashing Syndrome on the way.",
+  emerg029 = "Staff announcement: incoming devices with Password Panic.",
+  emerg030 = "Staff announcement: incoming devices with Sync Drift.",
+  emerg031 = "Staff announcement: devices with Phishing Hangover incoming.",
+  emerg032 = "Staff announcement: incoming devices with Folder Catastrophe.",
+  emerg033 = "Staff announcement: devices arriving with Overclocking Incident.",
+  emerg034 = "Staff announcement: incoming devices with Hard Drive Calcification.",
+
+  -- Malware outbreak (epidemic) alerts
+  epid001 = "Malware outbreak alert, all staff standby!",
+  epid002 = "Staff announcement: malware outbreak warning!",
+  epid003 = "Warning, malware outbreak detected!",
+  epid004 = "Warning!",
+  epid005 = "Malware outbreak resolved, all clear.",
+  epid006 = "Malware outbreak now under control.",
+  epid007 = "Malware outbreak contained.",
+  epid008 = "Malware incident over.",
+
+  -- Machine alarm
+  machwarn = "*Equipment Alarm*",
+
+  -- Maintenance (facilities tech calls) — IT room names
+  maint004 = "Facilities Tech call to Audio & Comms Lab.",
+  maint005 = "Facilities Tech to Thermal Imaging please.",
+  maint006 = "Facilities Tech call to Circuit Board Lab.",
+  maint007 = "Maintenance required in Refurbishment Studio.",
+  maint008 = "Facilities Tech, please service Data Recovery Suite.",
+  maint009 = "Maintenance required in Network Test Lab.",
+  maint010 = "Facilities Tech call to Hardware Monitor.",
+  maint011 = "Facilities Tech, please service Diagnostic Laboratory.",
+  maint012 = "Maintenance required in Malware Containment Lab.",
+  maint013 = "Facilities Tech, please maintain Battery Repair Bay.",
+  maint014 = "Maintenance required in Screen Repair Workshop.",
+  maint015 = "Facilities Tech call to Storage Test Bench.",
+  maint016 = "Facilities Tech to attend Deep Scan Suite.",
+
+  -- Earthquake warnings (neutral — no hospital terminology)
+  quake001 = "Warning! Seismic activity reported.",
+  quake002 = "Warning! Seismic event imminent.",
+  quake003 = "Attention! Seismic warning.",
+  quake004 = "Attention! Seismic event on the way.",
+
+  -- Random PA announcements — IT shop setting
+  rand001 = "White courtesy phone.",
+  rand002 = "Alex from Networking to the Support Lab please.",
+  rand003 = "No food or drink near equipment please.",
+  rand005 = "Customers are reminded not to leave devices unattended in the corridors.",
+  rand006 = "Malware spreads. Keep your devices patched.",
+  rand008 = "Customer message: payment details required.",
+  rand009 = "Customer message: purchase orders required.",
+  rand010 = "Quiet please, people are working.",
+  rand012 = "Customers are asked not to drop devices too much.",
+  rand013 = "Warning: This is a warning.",
+  rand016 = "Customers leave their devices at their own risk.",
+  rand017 = "Frustrated customers are asked to remain as calm as possible.",
+  rand018 = "Customers are asked to be patient.",
+  rand019 = "Customers are asked to wait quietly.",
+  rand021 = "Please do not litter the shop.",
+  rand022 = "Dropping litter is against the rules.",
+  rand024 = "Customers, please keep your malware to yourself.",
+  rand025 = "Customers must have their purchase orders ready.",
+  rand026 = "Customers, have your payment details ready.",
+  rand027 = "Priority devices to the front of the queue.",
+  rand028 = "Please form orderly queues.",
+  rand029 = "Look out for other Bullfrog products.",
+  rand030 = "No loitering.",
+  rand031 = "No littering.",
+  rand032 = "No overclocking on premises.",
+  rand033 = "Staff members are reminded to rest frequently.",
+  rand034 = "Today's special offer: half price cable management.",
+  rand035 = "Messrs Burke and Hare to the rear exit please.",
+  rand036 = "Please don't feed the vermin, thank you!",
+  rand037 = "Customers are kindly reminded to describe their issue clearly, thank you!",
+  rand040 = "Litter alert!",
+  rand041 = "I'm fed up with announcing, I want to go home.",
+  rand044 = "Could people please try not to drop equipment in the corridors.",
+  rand045 = "Alex Lecter report to compliance please, Alex Lecter to compliance.",
+  rand046 = "Your sound card is working.",
+
+  -- Staff required announcements — IT staff and room names
+  reqd001 = "Technician, attend immediately in Hardware Monitor please.",
+  reqd002 = "Technician, attend in the Malware Scanner room please.",
+  reqd003 = "Technician, attend in Customer Support Lab please.",
+  reqd004 = "Bench Technician required in Screen Repair Workshop please.",
+  reqd005 = "Technician needed in Audio & Comms Lab.",
+  reqd006 = "Technician required in Storage Test Bench room.",
+  reqd007 = "Technician wanted in Deep Scan Suite.",
+  reqd008 = "Technician required at Triage Desk.",
+  reqd009 = "Bench Technician required in Bulk Repair Bay.",
+  reqd010 = "Two Hardware Engineers required in Clean Room Workshop.",
+  reqd011 = "Another Hardware Engineer required in Clean Room Workshop.",
+  reqd012 = "Bench Technician required in Quick Fix Counter.",
+  reqd013 = "Technician required in Thermal Imaging.",
+  reqd014 = "Technician required in Battery Repair Bay.",
+  reqd015 = "Technician required in Circuit Board Lab.",
+  reqd016 = "Technician needed in Refurbishment Studio.",
+  reqd017 = "Technician required in Training Center.",
+  reqd019 = "Technician wanted in Data Recovery Suite.",
+  reqd020 = "Technician required in Network Test Lab.",
+  reqd021 = "Technician required in Diagnostic Laboratory.",
+  reqd023 = "R&D Specialist needed in R&D Laboratory.",
+  reqd024 = "Technician required in Malware Containment Lab.",
+
+  -- Staff dismissal announcements — IT staff names
+  sack001 = "Technician dismissed.",
+  sack002 = "Technician is leaving.",
+  sack003 = "Technician on the way out.",
+  sack004 = "Bench Technician is leaving.",
+  sack005 = "Bench Technician is leaving now.",
+  sack006 = "Dismissed Facilities Tech on the way out.",
+  sack007 = "Service Desk Coordinator has been asked to leave.",
+  sack008 = "Service Desk Coordinator is leaving.",
+  sack009 = "Staff member has been poached.",
+  sack010 = "Technician has been poached.",
+
+  -- Apology announcements
+  sorry001 = "We apologise for the amount of litter.",
+  sorry002 = "We apologise for the extreme cold.",
+  sorry003 = "We're sorry for the excessive heat.",
+  sorry004 = "Apologies to customers, the heating system is malfunctioning.",
+  sorry005 = "Spill warning, mind your step.",
+  sorry006 = "Maintenance, spill alert in the corridor.",
+
+  -- VIP visit announcements
+  vip001 = "Watch out, we've got a VIP in the building.",
+  vip002 = "A VIP has entered the building.",
+  vip003 = "A VIP is currently visiting.",
+  vip004 = "A VIP is touring the building.",
+  vip005 = "We have a VIP with us.",
+  vip008 = "A corporate auditor is in the building.",
+}
+

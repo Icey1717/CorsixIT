@@ -94,6 +94,7 @@ local function load_language_file(path)
     information      = auto_table(),
     room_descriptions = auto_table(),
     totd_window      = auto_table(),
+    subtitles        = {},
   }
 
   setmetatable(env, {__index = _G})
@@ -595,6 +596,178 @@ describe("totd_window.tips overrides (no hospital/patient/doctor framing)", func
       end
     end)
   end
+
+end)
+
+-- ── PA Subtitle announcements ─────────────────────────────────────────────────
+
+describe("subtitles overrides (IT-themed PA announcements)", function()
+
+  -- Epidemic (malware outbreak) subtitles
+  local epidemic_keys = {"epid001","epid002","epid003","epid004","epid005","epid006","epid007","epid008"}
+  local epidemic_forbidden = {"epidemic", "stand down", "stand by"}
+
+  for _, key in ipairs(epidemic_keys) do
+    it("subtitles." .. key .. " does not use 'epidemic'", function()
+      local e = require_env()
+      local v = tostring(e.subtitles[key] or "")
+      assert.truthy(#v > 0, "subtitles." .. key .. " must be overridden with IT-themed text")
+      for _, term in ipairs(epidemic_forbidden) do
+        assert.falsy(v:lower():find(term, 1, true),
+          "subtitles." .. key .. " must not say '" .. term .. "': " .. v)
+      end
+    end)
+  end
+
+  -- Emergency (surge job) subtitles — spot-check a few for IT disease name accuracy
+  local emerg_spot = {
+    emerg001 = "Disk Overflow",
+    emerg002 = "Crash Loop",
+    emerg014 = "Tab Tsunami",
+    emerg022 = "Privacy Spill",
+  }
+  for key, expected_name in pairs(emerg_spot) do
+    it("subtitles." .. key .. " mentions IT device name '" .. expected_name .. "'", function()
+      local e = require_env()
+      local v = tostring(e.subtitles[key] or "")
+      assert.truthy(#v > 0, "subtitles." .. key .. " must be overridden")
+      assert.truthy(v:find(expected_name, 1, true),
+        "subtitles." .. key .. " should mention '" .. expected_name .. "', got: " .. v)
+    end)
+  end
+
+  -- Staff-required subtitles must use IT staff names
+  local reqd_forbidden = {"doctor", "nurse", "handyman", "gp's office"}
+  local reqd_keys = {
+    "reqd001","reqd002","reqd003","reqd004","reqd005","reqd006","reqd007",
+    "reqd008","reqd009","reqd010","reqd012","reqd013","reqd014","reqd015",
+    "reqd016","reqd019","reqd020","reqd021","reqd023","reqd024"
+  }
+  for _, key in ipairs(reqd_keys) do
+    it("subtitles." .. key .. " does not say 'Doctor', 'Nurse', or 'Handyman'", function()
+      local e = require_env()
+      local v = tostring(e.subtitles[key] or "")
+      assert.truthy(#v > 0, "subtitles." .. key .. " must be overridden")
+      for _, term in ipairs(reqd_forbidden) do
+        assert.falsy(v:lower():find(term, 1, true),
+          "subtitles." .. key .. " must not say '" .. term .. "': " .. v)
+      end
+    end)
+  end
+
+  -- Maintenance subtitles must use IT staff/room names
+  local maint_forbidden = {"handyman", "tongue slicer", "x-ray", "dna fixer", "inflator",
+                            "electrolysis", "blood machine", "ultrascanner", "cardio", "hair restorer"}
+  local maint_keys = {
+    "maint004","maint005","maint006","maint007","maint008","maint009",
+    "maint010","maint011","maint012","maint013","maint014","maint015","maint016"
+  }
+  for _, key in ipairs(maint_keys) do
+    it("subtitles." .. key .. " does not use 'Handyman' or hospital room names", function()
+      local e = require_env()
+      local v = tostring(e.subtitles[key] or "")
+      assert.truthy(#v > 0, "subtitles." .. key .. " must be overridden")
+      for _, term in ipairs(maint_forbidden) do
+        assert.falsy(v:lower():find(term, 1, true),
+          "subtitles." .. key .. " must not say '" .. term .. "': " .. v)
+      end
+    end)
+  end
+
+  -- Staff dismissal subtitles must use IT staff names
+  local sack_forbidden = {"doctor", "nurse", "handyman"}
+  local sack_keys = {"sack001","sack002","sack003","sack004","sack005","sack006","sack007","sack008"}
+  for _, key in ipairs(sack_keys) do
+    it("subtitles." .. key .. " does not use hospital staff titles", function()
+      local e = require_env()
+      local v = tostring(e.subtitles[key] or "")
+      assert.truthy(#v > 0, "subtitles." .. key .. " must be overridden")
+      for _, term in ipairs(sack_forbidden) do
+        assert.falsy(v:lower():find(term, 1, true),
+          "subtitles." .. key .. " must not say '" .. term .. "': " .. v)
+      end
+    end)
+  end
+
+  -- Random PA announcements must not use hospital/patient terminology
+  local rand_hospital_forbidden = {"hospital", "patients", "gp's office"}
+  local rand_check = {"rand002","rand003","rand005","rand006","rand008","rand009",
+                      "rand010","rand012","rand016","rand017","rand018","rand019",
+                      "rand021","rand022","rand024","rand025","rand026","rand027",
+                      "rand028","rand030","rand031","rand032","rand033","rand036",
+                      "rand037","rand040","rand041","rand044","rand045"}
+  for _, key in ipairs(rand_check) do
+    it("subtitles." .. key .. " does not say 'hospital' or 'patients'", function()
+      local e = require_env()
+      local v = tostring(e.subtitles[key] or "")
+      assert.truthy(#v > 0, "subtitles." .. key .. " must be overridden")
+      for _, term in ipairs(rand_hospital_forbidden) do
+        assert.falsy(v:lower():find(term, 1, true),
+          "subtitles." .. key .. " must not say '" .. term .. "': " .. v)
+      end
+    end)
+  end
+
+  -- VIP subtitle must not say 'hospital'
+  it("subtitles.vip008 does not say 'hospital'", function()
+    local e = require_env()
+    local v = tostring(e.subtitles.vip008 or "")
+    assert.truthy(#v > 0, "subtitles.vip008 must be overridden")
+    assert.falsy(v:lower():find("hospital", 1, true),
+      "subtitles.vip008 must not say 'hospital': " .. v)
+  end)
+
+end)
+
+-- ── misc.epidemic overrides ───────────────────────────────────────────────────
+
+describe("misc epidemic/outbreak overrides", function()
+
+  it("misc.epidemics_off does not say 'Epidemics'", function()
+    local e = require_env()
+    local v = tostring(e.misc.epidemics_off or "")
+    assert.truthy(#v > 0, "misc.epidemics_off must be overridden")
+    assert.falsy(v:lower():find("epidemic", 1, true),
+      "misc.epidemics_off must not say 'epidemic': " .. v)
+  end)
+
+  it("misc.epidemics_on does not say 'Epidemics'", function()
+    local e = require_env()
+    local v = tostring(e.misc.epidemics_on or "")
+    assert.truthy(#v > 0, "misc.epidemics_on must be overridden")
+    assert.falsy(v:lower():find("epidemic", 1, true),
+      "misc.epidemics_on must not say 'epidemic': " .. v)
+  end)
+
+  it("misc.epidemic_no_diseases does not say 'contagious diseases'", function()
+    local e = require_env()
+    local v = tostring(e.misc.epidemic_no_diseases or "")
+    assert.truthy(#v > 0, "misc.epidemic_no_diseases must be overridden")
+    assert.falsy(v:lower():find("contagious diseases", 1, true),
+      "misc.epidemic_no_diseases must not say 'contagious diseases': " .. v)
+  end)
+
+end)
+
+-- ── dynamic_info epidemic overrides ──────────────────────────────────────────
+
+describe("dynamic_info epidemic-related overrides", function()
+
+  it("dynamic_info.staff.actions.vaccine does not say 'patient'", function()
+    local e = require_env()
+    local v = tostring(e.dynamic_info.staff.actions.vaccine or "")
+    assert.truthy(#v > 0, "dynamic_info.staff.actions.vaccine must be overridden")
+    assert.falsy(v:lower():find("patient", 1, true),
+      "dynamic_info.staff.actions.vaccine must not say 'patient': " .. v)
+  end)
+
+  it("dynamic_info.patient.actions.epidemic_vaccinated does not say 'contagious'", function()
+    local e = require_env()
+    local v = tostring(e.dynamic_info.patient.actions.epidemic_vaccinated or "")
+    assert.truthy(#v > 0, "dynamic_info.patient.actions.epidemic_vaccinated must be overridden")
+    assert.falsy(v:lower():find("contagious", 1, true),
+      "dynamic_info.patient.actions.epidemic_vaccinated must not say 'contagious': " .. v)
+  end)
 
 end)
 
