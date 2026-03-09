@@ -48,11 +48,21 @@ challenge!"
 #expertise[37].Known.RschReqd 1 20000 I_D_STANDARD  DIAGNOSIS
 #expertise[38].Known.RschReqd 1 20000 I_D_WARD      DIAGNOSIS
 
+-- ── Visuals ───────────────────────────────────────────────────────────────────
+-- Index = disease.visuals_id / disease.non_visuals_id from the disease Lua file.
+-- Value > 0 means the disease is active in this level.
+#visuals[0]  1 I_BLOATY_HEAD       -- bloaty_head     visuals_id=0
+#visuals[1]  1 I_HAIRYITUS         -- hairyitis       visuals_id=1
+#visuals[8]  1 I_BALDNESS          -- baldness        visuals_id=8
+#visuals[11] 1 I_SLEEPING_ILLNESS  -- sleeping_illness visuals_id=11
+#non_visuals[0] 1 I_UNCOMMON_COLD  -- uncommon_cold   non_visuals_id=0
+
 -- ── Objects ──────────────────────────────────────────────────────────────────
 -- A minimal set of equipment so rooms can be built
 #objects[9].StartAvail.StartStrength.AvailableForLevel  1  8 1 Inflator Machine
 #objects[25].StartAvail.StartStrength.AvailableForLevel 1  8 1 Hair restorer
 #objects[30].StartAvail.StartStrength.AvailableForLevel 1 12 1 Operating Table
+#objects[46].StartAvail.StartStrength.AvailableForLevel 1  8 1 Electrolysis Machine
 
 -- ── Staff availability ───────────────────────────────────────────────────────
 #staff_levels[0].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate 0 6 4 2 2 10 10 10 10 5

@@ -818,6 +818,8 @@ tooltip.rooms.decontamination   = "The Malware Containment Lab isolates and remo
 -- Object tooltips (key items)
 tooltip.objects.reception_desk  = "Service Counter: requires a Service Desk Coordinator to register incoming customers"
 tooltip.objects.computer        = "Computer workstation for diagnostics and administration"
+tooltip.objects.litter          = "Litter: Left on the floor by a customer who could not find a bin to throw it in."
+tooltip.objects.rathole         = "Home of a rat family that found your repair shop dirty enough to live here."
 
 -- Staff window
 tooltip.staff_window.face        = "This person's profile - click to open management screen"
@@ -842,6 +844,10 @@ tooltip.research.improvements_inc   = "Increase Equipment Upgrades research perc
 tooltip.research.specialisation_dec = "Decrease Specializations research percentage"
 tooltip.research.specialisation_inc = "Increase Specializations research percentage"
 
+-- Casebook tooltips
+tooltip.casebook.cure_requirement.hire_staff = "You need to employ staff to handle this repair procedure"
+tooltip.casebook.cure_type.unknown           = "You do not yet know how to fix this issue"
+
 -- ============================================================
 -- SECTION 15: Confirmations
 -- ============================================================
@@ -865,3 +871,54 @@ vip_names = {
   "Avery Kowalski",        -- regional franchise director
   "Quinn Faber",           -- IT security consultant
 }
+
+-- ============================================================
+-- SECTION 17: Level-lost screen
+-- ============================================================
+
+information.custom_game = "Welcome to Terminal Triage. Good luck with this contract!"
+
+information.level_lost = {
+  "Shut Down! You failed the contract. Better prep next time.",
+  "The reason you lost:",
+  reputation         = "Your Brand Trust fell below %d.",
+  balance            = "Your bank balance fell below %d.",
+  percentage_killed  = "You wrote off more than %d percent of customer devices.",
+  cheat              = "Hope you didn't click the Lose Level button by accident!",
+  staff_happiness    = "Your average staff satisfaction fell below %d%%.",
+  patient_happiness  = "Your average customer satisfaction fell below %d%%.",
+}
+
+-- ============================================================
+-- SECTION 18: Room descriptions
+-- ============================================================
+
+room_descriptions.inflation[2] = "Devices with swollen or failing batteries are brought to the Battery Repair Bay. A Bench Technician will safely discharge, replace, and recalibrate the battery cell to restore correct capacity.//"
+
+-- ============================================================
+-- SECTION 19: Tip of the Day
+-- ============================================================
+
+totd_window.tips = {
+  "Every repair shop needs a service counter and a Triage Desk to get going. After that, it depends on what kind of devices are brought in. A Quick Fix Counter is always a good investment.",
+  "Machines such as the Battery Repair Bay need maintenance. Employ a Facilities Tech or two to keep equipment running, or you will risk breakdowns mid-repair.",
+  "After a while, your staff will get tired. Be sure to build a Break Room so they can recharge.",
+  "Place enough radiators to keep your staff and customers comfortable, or they will become unhappy. Use the site map to find any cold spots on the floor.",
+  "A senior technician's skill level greatly influences the quality and speed of initial diagnosis. Place your best technician at the Triage Desk to reduce unnecessary diagnostic detours.",
+  "Juniors and technicians can improve their skills by learning from a senior consultant in the Training Center. If the consultant holds a specialization (Hardware Engineer, Support Specialist, or R&D Specialist), they will also pass on that knowledge.",
+  "Did you try to enter the European emergency number (112) into the fax machine? Make sure your sound is on!",
+  "You can adjust some settings such as the resolution and language in the options window found both in the main menu and in-game.",
+  "You selected a language other than English, but there is English text all over the place? Help us by translating missing texts into your language!",
+  "The CorsixTH team is looking for reinforcements! Are you interested in coding, translating, or creating graphics? Contact us at our Discord Server, Sub-Reddit, or Matrix Server. Links are on our website (CorsixTH.com).",
+  "If you find a bug, please report it at our bugtracker: th-issues.corsix.org",
+  "Each contract has certain requirements to fulfill before you can move on to the next one. Check the status window to see your progression towards the contract goals.",
+  "If you want to edit or remove an existing room, you can do so with the edit room button found in the bottom toolbar.",
+  "In a crowd of waiting customers, you can quickly find out which ones are waiting for a particular room by hovering over that room with your mouse cursor.",
+  "Click on the door of a room to see its queue. You can do useful fine tuning here, such as reordering the queue or redirecting a customer to a different room.",
+  "Unhappy staff will ask for pay rises frequently. Make sure your staff is working in a comfortable environment to keep that from happening.",
+  "Customers will get thirsty while waiting in your shop, especially if the heating is turned up! Place vending machines in strategic positions for some extra income.",
+  "You can skip the full diagnostic process for a customer and attempt a repair directly if you have already handled the same issue before. Beware: an incorrect repair may result in the device being written off.",
+  "Surge jobs can be a great source of extra income, provided you have enough capacity to handle the incoming devices in time.",
+  "Did you know you can assign Facilities Techs to specific zones? Just click the 'All Zones' text in their staff profile to cycle through them!",
+}
+

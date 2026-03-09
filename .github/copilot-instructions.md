@@ -9,6 +9,38 @@ Run `bd prime` for workflow context.
 - `bd close <id>` - Complete work
 - `bd dolt push` - Push changes to remote (run at session end)
 
+## Testing
+
+After making code changes, run both of the following:
+
+### 1. Lua unit tests
+
+Run from `TerminalTriage/Luatest/`:
+```
+lua %APPDATA%\luarocks\bin\busted
+```
+
+Run from `CorsixTH/Luatest/` (with the base game Lua on the path):
+```
+lua %APPDATA%\luarocks\bin\busted --lpath="../Lua/?.lua"
+```
+
+All tests must pass before the task is considered done.
+
+### 2. Launch the game and check stdio
+
+Launch the mod and monitor stdout/stderr for errors and warnings:
+```
+cd TerminalTriage && launch.bat
+```
+
+Capture stdio output and inspect it. The game must start with:
+- **No `Error` lines** (a hard error will crash or prevent the campaign from loading)
+- **No `Warning: This level does not contain any diseases`** (means `#visuals`/`#non_visuals` entries are missing or have wrong indices in the level file)
+- **No `Warning: Removing disease … due to missing treatment room`** (means a required room's object has `AvailableForLevel = 0` in `base_config.lua` and the level file doesn't override it)
+
+Soundfont warnings (`Required soundfont is not found`) are a local config issue and can be ignored.
+
 ## Searching Code
 
 This project support code munch (jcodemunch) via mcp.

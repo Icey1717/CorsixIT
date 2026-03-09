@@ -8,4 +8,4 @@ set CORSIXTH_EXE=G:\repos\CorsixIT\build\win-x64-rel\CorsixTH\RelWithDebInfo\Cor
 REM Resolve the directory this script lives in
 set MOD_DIR=%~dp0
 
-"%CORSIXTH_EXE%" --interpreter="G:\repos\CorsixIT\CorsixTH\CorsixTH.lua" --lua-dir="%MOD_DIR%Lua" --config-file="%MOD_DIR%config.txt"
+"%CORSIXTH_EXE%" --interpreter="G:\repos\CorsixIT\CorsixTH\CorsixTH.lua" --lua-dir="%MOD_DIR%Lua" --config-file="%MOD_DIR%config.txt" --campaign=terminal_triage

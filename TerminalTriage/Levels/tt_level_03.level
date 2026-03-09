@@ -61,21 +61,21 @@
 #objects[46].StartAvail.StartStrength.AvailableForLevel 0  8 1 Electrolysis Machine
 #objects[47].StartAvail.StartStrength.AvailableForLevel 0  7 1 Jellyitus Moulding Machine
 
--- Visuals
-#visuals[0]   1 I_BLOATY_HEAD
-#visuals[1]  21 I_HAIRYITUS
-#visuals[2]  11 I_BROKEN_BONES
-#visuals[3]  12 I_JELLYITUS
-#visuals[4]  11 I_SLACK_TONGUE
-#non_visuals[0] 1 I_UNCOMMON_COLD
-#non_visuals[1] 1 I_SLEEPING_ILLNESS
-#non_visuals[2] 12 I_BALDNESS
-#non_visuals[3] 5 I_DISCRETE_ITCHING
-#non_visuals[4] 19 I_SPARE_RIBS
-#non_visuals[5] 31 I_KIDNEY_BEANS
-#non_visuals[6] 3 I_BROKEN_WIND
-#non_visuals[7] 25 I_BROKEN_HEART
-#non_visuals[8] 1 I_MULTIPLE_TV_PERSONALITIES
+-- Visuals (index = disease.visuals_id / non_visuals_id from disease Lua files)
+#visuals[0]    1 I_BLOATY_HEAD       -- bloaty_head           visuals_id=0
+#visuals[1]   21 I_HAIRYITUS         -- hairyitis             visuals_id=1
+#visuals[5]   11 I_SLACK_TONGUE      -- slack_tongue          visuals_id=5
+#visuals[7]   11 I_BROKEN_BONES      -- fractured_bones       visuals_id=7
+#visuals[8]    1 I_BALDNESS          -- baldness              visuals_id=8
+#visuals[9]    5 I_DISCRETE_ITCHING  -- discrete_itching      visuals_id=9
+#visuals[10]  12 I_JELLYITUS         -- jellyitis             visuals_id=10
+#visuals[11]   1 I_SLEEPING_ILLNESS  -- sleeping_illness      visuals_id=11
+#non_visuals[0]  1 I_UNCOMMON_COLD           -- uncommon_cold         non_visuals_id=0
+#non_visuals[1]  3 I_BROKEN_WIND             -- broken_wind           non_visuals_id=1
+#non_visuals[2] 19 I_SPARE_RIBS              -- spare_ribs            non_visuals_id=2
+#non_visuals[3] 31 I_KIDNEY_BEANS            -- kidney_beans          non_visuals_id=3
+#non_visuals[4] 25 I_BROKEN_HEART            -- broken_heart          non_visuals_id=4
+#non_visuals[6]  1 I_MULTIPLE_TV_PERSONALITIES -- tv_personalities    non_visuals_id=6
 
 -- ── Staff availability ───────────────────────────────────────────────────────
 #staff_levels[0].Month.Nurses.Doctors.Handymen.Receptionists.ShrkRate.SurgRate.RschRate.ConsRate.JrRate  0 6 5 2 2 10 10 10 10 5

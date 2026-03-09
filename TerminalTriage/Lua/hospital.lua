@@ -2187,7 +2187,11 @@ function Hospital:canConcentrateResearch(disease)
   end
   local research_progress = self.research.research_progress
   local object_type
-  for obj, _ in pairs(self.world.available_rooms[room].objects_needed) do
+  local room_def = self.world.available_rooms[room]
+  if not room_def then
+    return false
+  end
+  for obj, _ in pairs(room_def.objects_needed) do
     if self.world.object_types[obj].default_strength then
       object_type = obj
       break

@@ -91,6 +91,9 @@ local function load_language_file(path)
     confirmation     = auto_table(),
     fax              = auto_table(),
     vip_names        = {},
+    information      = auto_table(),
+    room_descriptions = auto_table(),
+    totd_window      = auto_table(),
   }
 
   setmetatable(env, {__index = _G})
@@ -454,3 +457,144 @@ describe("hospital terminology should not leak into IT mod strings", function()
   end)
 
 end)
+
+-- ── Level-lost screen ─────────────────────────────────────────────────────────
+
+describe("information.level_lost overrides (no hospital/patient framing)", function()
+
+  it("level_lost.percentage_killed does not mention 'patients'", function()
+    local e = require_env()
+    local level_lost = e.information and e.information.level_lost
+    assert.truthy(type(level_lost) == "table",
+      "information.level_lost must be overridden in the IT language file")
+    local v = tostring(level_lost.percentage_killed or "")
+    assert.truthy(#v > 0, "information.level_lost.percentage_killed must be set")
+    assert.falsy(v:lower():find("patient"),
+      "level_lost.percentage_killed must not say 'patient': " .. v)
+  end)
+
+  it("level_lost.patient_happiness does not mention 'patient happiness'", function()
+    local e = require_env()
+    local level_lost = e.information and e.information.level_lost
+    assert.truthy(type(level_lost) == "table",
+      "information.level_lost must be overridden in the IT language file")
+    local v = tostring(level_lost.patient_happiness or "")
+    assert.truthy(#v > 0, "information.level_lost.patient_happiness must be set")
+    assert.falsy(v:lower():find("patient"),
+      "level_lost.patient_happiness must not say 'patient': " .. v)
+  end)
+
+  it("level_lost[1] (fail headline) is IT-themed and does not say 'hospital'", function()
+    local e = require_env()
+    local level_lost = e.information and e.information.level_lost
+    assert.truthy(type(level_lost) == "table",
+      "information.level_lost must be overridden in the IT language file")
+    local v = tostring(level_lost[1] or "")
+    assert.truthy(#v > 0, "information.level_lost[1] must be set")
+    assert.falsy(v:lower():find("hospital"),
+      "level_lost[1] must not say 'hospital': " .. v)
+  end)
+
+end)
+
+-- ── Casebook tooltip overrides ────────────────────────────────────────────────
+
+describe("tooltip.casebook overrides (no treatment/disease framing)", function()
+
+  it("tooltip.casebook.cure_requirement.hire_staff does not say 'treatment'", function()
+    local e = require_env()
+    local v = tostring(e.tooltip.casebook.cure_requirement.hire_staff)
+    assert.truthy(#v > 0, "tooltip.casebook.cure_requirement.hire_staff must be overridden")
+    assert.falsy(v:lower():find("treatment"),
+      "casebook.cure_requirement.hire_staff must not say 'treatment': " .. v)
+  end)
+
+  it("tooltip.casebook.cure_type.unknown does not say 'disease'", function()
+    local e = require_env()
+    local v = tostring(e.tooltip.casebook.cure_type.unknown)
+    assert.truthy(#v > 0, "tooltip.casebook.cure_type.unknown must be overridden")
+    assert.falsy(v:lower():find("disease"),
+      "casebook.cure_type.unknown must not say 'disease': " .. v)
+  end)
+
+end)
+
+-- ── Object tooltip overrides ──────────────────────────────────────────────────
+
+describe("tooltip.objects overrides (no hospital/patient framing)", function()
+
+  it("tooltip.objects.litter does not say 'patient'", function()
+    local e = require_env()
+    local v = tostring(e.tooltip.objects.litter)
+    assert.truthy(#v > 0, "tooltip.objects.litter must be overridden")
+    assert.falsy(v:lower():find("patient"),
+      "tooltip.objects.litter must not say 'patient': " .. v)
+  end)
+
+  it("tooltip.objects.rathole does not say 'hospital'", function()
+    local e = require_env()
+    local v = tostring(e.tooltip.objects.rathole)
+    assert.truthy(#v > 0, "tooltip.objects.rathole must be overridden")
+    assert.falsy(v:lower():find("hospital"),
+      "tooltip.objects.rathole must not say 'hospital': " .. v)
+  end)
+
+end)
+
+-- ── Room descriptions ─────────────────────────────────────────────────────────
+
+describe("room_descriptions overrides (no medical framing)", function()
+
+  it("room_descriptions.inflation[2] does not say 'Patients' or 'cranium'", function()
+    local e = require_env()
+    local inf = e.room_descriptions and e.room_descriptions.inflation
+    if type(inf) == "table" and inf[2] then
+      local v = tostring(inf[2])
+      assert.falsy(v:lower():find("patients"),
+        "room_descriptions.inflation[2] must not say 'Patients': " .. v)
+      assert.falsy(v:lower():find("cranium"),
+        "room_descriptions.inflation[2] must not say 'cranium': " .. v)
+    end
+  end)
+
+end)
+
+-- ── Tip of the Day overrides ──────────────────────────────────────────────────
+
+describe("totd_window.tips overrides (no hospital/patient/doctor framing)", function()
+
+  local hospital_medical_terms = {"hospital", "patients", "doctor", "gp's office", "handyman"}
+
+  it("totd_window.tips is overridden and is a table", function()
+    local e = require_env()
+    local tips = e.totd_window and e.totd_window.tips
+    assert.truthy(type(tips) == "table",
+      "totd_window.tips must be a table (overridden with IT-themed tips)")
+    assert.truthy(#tips >= 10,
+      "totd_window.tips must have at least 10 entries, got " .. tostring(#tips))
+  end)
+
+  it("totd_window.tips has same count as base (20 tips)", function()
+    local e = require_env()
+    local tips = e.totd_window and e.totd_window.tips
+    if type(tips) == "table" then
+      assert.equal(20, #tips,
+        "totd_window.tips should have 20 entries to match base game; got " .. #tips)
+    end
+  end)
+
+  for _, term in ipairs(hospital_medical_terms) do
+    it("no tip contains '" .. term .. "'", function()
+      local e = require_env()
+      local tips = e.totd_window and e.totd_window.tips
+      if type(tips) == "table" then
+        for i, tip in ipairs(tips) do
+          assert.falsy(tostring(tip):lower():find(term, 1, true),
+            "tip[" .. i .. "] must not contain '" .. term .. "': " .. tostring(tip))
+        end
+      end
+    end)
+  end
+
+end)
+

@@ -399,6 +399,23 @@ function App:init()
         print(err)
         self.ui:addWindow(UIInformation(self.ui, { err }))
       end
+    -- If a campaign name was specified, find and auto-load it
+    elseif self.command_line.campaign then
+      local campaign_name = self.command_line.campaign
+      local campaign_path = nil
+      for _, dir in ipairs({self.campaign_dir, self.user_campaign_dir}) do
+        local path = dir .. campaign_name .. ".campaign"
+        if lfs.attributes(path, "mode") == "file" then
+          campaign_path = path
+          break
+        end
+      end
+      if campaign_path then
+        self:loadCampaign(campaign_path)
+      else
+        print("Warning: Campaign '" .. campaign_name .. "' not found in " ..
+              self.campaign_dir .. " or " .. self.user_campaign_dir)
+      end
     end
     -- There might also be a message from the earlier initialization process that should be shown.
     -- Show it using the built-in font in case the game's font is messed up.
