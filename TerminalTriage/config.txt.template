@@ -35,14 +35,18 @@ theme_hospital_install = [[C:\Path\To\ThemeHospital]]
 language = [[English]]
 
 -------------------------------------------------------------------------------
--- Folder overrides (optional)
--- By default, Saves/, Levels/, Campaigns/, and Screenshots/ resolve relative
--- to the directory of this config.txt file.  Uncomment and edit only if you
--- need to redirect them somewhere else.
+-- Folder overrides
+-- Saves/, Levels/, and Screenshots/ resolve relative to config.txt by default.
+--
+-- IMPORTANT: 'campaigns' MUST be set to TerminalTriage/UserCampaigns/ (or any
+-- folder other than TerminalTriage/Campaigns/).  CorsixTH scans both
+-- campaign_dir (= TerminalTriage/Campaigns/ via getFullPath) and
+-- user_campaign_dir (= derived from config.txt location).  If both point to
+-- the same folder the mod campaign appears as a duplicate in the menu.
 -------------------------------------------------------------------------------
--- savegames  = [[C:\Path\To\TerminalTriage\Saves]]
--- levels     = [[C:\Path\To\TerminalTriage\Levels]]
--- campaigns  = [[C:\Path\To\TerminalTriage\Campaigns]]
+-- savegames   = [[C:\Path\To\TerminalTriage\Saves]]
+-- levels      = [[C:\Path\To\TerminalTriage\Levels]]
+campaigns      = [[C:\Path\To\TerminalTriage\UserCampaigns]]
 -- screenshots = [[C:\Path\To\TerminalTriage\Screenshots]]
 
 -------------------------------------------------------------------------------

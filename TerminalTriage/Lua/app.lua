@@ -46,6 +46,11 @@ local mod_lua_dir = debug.getinfo(1, "S").source:sub(2):match("^(.*[/\\])")
 local base_lua_dir = mod_lua_dir .. ".." .. pathsep .. ".." .. pathsep
                    .. "CorsixTH" .. pathsep .. "Lua" .. pathsep
 
+-- Also add base CorsixTH/Lua/ to Lua's standard package.path so that
+-- modules loaded via require() (not corsixth.require) can also be found.
+-- e.g. app.lua calls require('config_finder') directly.
+package.path = package.path .. ";" .. base_lua_dir .. "?.lua"
+
 -- Patch corsixth.require to add base CorsixTH/Lua/ as a fallback.
 --
 -- The original corsixth.require only searches in code_dir (which is now the
@@ -162,16 +167,16 @@ App.loadLuaFolder = function(self, dir, no_results, append_to)
   end
 
   -- First: iterate base game directory; corsixth.require uses mod override when present.
-  local ok, iter = pcall(lfs.dir, _lf_base .. dir)
+  local ok, iter, state = pcall(lfs.dir, _lf_base .. dir)
   if ok then
-    for file in iter do process(file) end
+    for file in iter, state do process(file) end
   end
 
   -- Second: iterate mod directory for new files not present in the base game.
   local mod_path = self:getFullPath({"Lua", dir}, true)
-  local ok2, iter2 = pcall(lfs.dir, mod_path)
+  local ok2, iter2, state2 = pcall(lfs.dir, mod_path)
   if ok2 then
-    for file in iter2 do process(file) end
+    for file in iter2, state2 do process(file) end
   end
 
   if no_results then return end

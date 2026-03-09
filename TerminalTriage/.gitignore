@@ -12,6 +12,12 @@ Saves/*.sav
 Saves/*.map
 Saves/*.dat
 
+# Game logs — user-local, not tracked
+Logs/
+
+# User-added campaigns (separate from mod's Campaigns/ to avoid duplicate scan)
+UserCampaigns/
+
 # Screenshots
 Screenshots/
 
