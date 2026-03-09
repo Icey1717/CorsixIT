@@ -143,7 +143,18 @@ function App:init()
   self:initScreenshotsDir()
 
   -- Create the window
-  if not SDL.init("video", "timer", "audio") then
+  -- In headless mode (--headless-test=<script>) the caller must set
+  -- SDL_VIDEODRIVER=dummy (and optionally SDL_AUDIODRIVER=dummy) in the
+  -- environment before launching so that SDL succeeds without a real display.
+  local is_headless = self.command_line["headless-test"] ~= nil
+  if is_headless then
+    self.config.play_intro = false
+    self.config.fullscreen = false
+    self.config.audio      = false
+    if not SDL.init("video", "timer") then
+      return false, "Cannot initialise SDL (headless mode)"
+    end
+  elseif not SDL.init("video", "timer", "audio") then
     return false, "Cannot initialise SDL"
   end
 
@@ -170,7 +181,9 @@ function App:init()
       App.MIN_WINDOW_HEIGHT * self.config.ui_scale,
       unpack(modes)))
   self.video:setBlueFilterActive(false)
-  SDL.wm.setIconWin32()
+  if not is_headless then
+    SDL.wm.setIconWin32()
+  end
 
   self.caption = "CorsixTH"
 
@@ -1127,7 +1140,34 @@ function App:saveHotkeys()
   require('config_finder').save_hotkeys(hotkeys_filename, self.hotkeys)
 end
 
+--! Runs a Lua test script in headless mode instead of the normal SDL event loop.
+-- The script at the path given by --headless-test=<path> is loaded and called
+-- with this App instance as its sole argument.  The process exits 0 on success
+-- or 1 if the script cannot be loaded or raises an error.
+function App:runHeadlessTest()
+  local script_path = self.command_line["headless-test"]
+  print("[headless] Running test script: " .. tostring(script_path))
+  local fn, load_err = loadfile(script_path)
+  if not fn then
+    io.stderr:write("[headless] ERROR: Cannot load test script '" ..
+        tostring(script_path) .. "': " .. tostring(load_err) .. "\n")
+    os.exit(1)
+  end
+  local ok, run_err = pcall(fn, self)
+  if not ok then
+    io.stderr:write("[headless] TEST FAILED: " .. tostring(run_err) .. "\n")
+    os.exit(1)
+  end
+  print("[headless] Test script completed successfully")
+  os.exit(0)
+end
+
 function App:run()
+  -- In headless test mode, skip the SDL event loop and run the test script directly.
+  if self.command_line["headless-test"] then
+    return self:runHeadlessTest()
+  end
+
   -- The application "main loop" is an SDL event loop written in C, which calls
   -- a coroutine whenever an event occurs. Initially it may seem odd to involve
   -- coroutines, but it does give a few advantages:
