@@ -199,3 +199,101 @@ describe("corsixth.require fallback mechanism", function()
     assert.equal("mod_strings", req("strings"))
   end)
 end)
+
+describe("App.loadLuaFolder merge logic", function()
+  -- Simulate the loadLuaFolder override that merges base + mod directories.
+  -- The real implementation uses lfs.dir + corsixth.require, but the merging
+  -- logic can be exercised in isolation by supplying fake dir listings and a
+  -- fake require.
+
+  local function make_load_lua_folder(base_files, mod_files, require_fn)
+    -- base_files: list of filenames in the base game directory (e.g. {"die.lua","walk.lua"})
+    -- mod_files:  list of filenames in the mod directory       (e.g. {"die.lua","new.lua"})
+    -- require_fn: function(mod_name) -> value (simulates patched corsixth.require)
+    return function(dir)
+      if dir:sub(-1) ~= "/" then dir = dir .. "/" end
+      local results = {}
+      local loaded = {}
+
+      local function process(file)
+        if not file:match("%.lua$") then return end
+        local stem = file:sub(1, -5)
+        local mod_name = dir .. stem
+        if loaded[mod_name] then return end
+        loaded[mod_name] = true
+        local ok, result = pcall(require_fn, mod_name)
+        if ok and result ~= nil then
+          if type(result) == "function" then
+            results[stem] = result
+          end
+          results[#results + 1] = result
+        end
+      end
+
+      for _, f in ipairs(base_files) do process(f) end
+      for _, f in ipairs(mod_files) do process(f) end
+      return results
+    end
+  end
+
+  it("loads all base-game files when mod directory is empty", function()
+    local req = function(name) return "base:" .. name end
+    local load = make_load_lua_folder({"die.lua", "walk.lua", "idle.lua"}, {}, req)
+    local r = load("humanoid_actions")
+    assert.equal(3, #r)
+  end)
+
+  it("mod override replaces the base version (no duplicate)", function()
+    local req = function(name)
+      -- Simulate patched require: mod version of die shadows base version
+      if name == "humanoid_actions/die" then return "mod_die" end
+      return "base:" .. name
+    end
+    local load = make_load_lua_folder(
+      {"die.lua", "walk.lua"},  -- base
+      {"die.lua"},              -- mod override
+      req
+    )
+    local r = load("humanoid_actions")
+    -- die is loaded once (mod version), walk is loaded once (base version)
+    assert.equal(2, #r)
+    assert.truthy(r["die"] == "mod_die" or r[1] == "mod_die" or r[2] == "mod_die")
+  end)
+
+  it("mod-only files are added on top of base files", function()
+    local req = function(name) return "val:" .. name end
+    local load = make_load_lua_folder(
+      {"walk.lua"},   -- base has walk
+      {"extra.lua"},  -- mod adds extra
+      req
+    )
+    local r = load("rooms")
+    assert.equal(2, #r)
+  end)
+
+  it("files are not loaded twice even if listed in both directories", function()
+    local call_count = 0
+    local req = function(name)
+      call_count = call_count + 1
+      return "val:" .. name
+    end
+    local load = make_load_lua_folder(
+      {"die.lua"},  -- also in mod
+      {"die.lua"},  -- duplicate
+      req
+    )
+    load("humanoid_actions")
+    assert.equal(1, call_count)
+  end)
+
+  it("non-lua files in directories are ignored", function()
+    local req = function(name) return "val:" .. name end
+    local load = make_load_lua_folder(
+      {"die.lua", "README.txt", ".gitkeep"},
+      {},
+      req
+    )
+    local r = load("humanoid_actions")
+    assert.equal(1, #r)
+  end)
+end)

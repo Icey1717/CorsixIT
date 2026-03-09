@@ -114,3 +114,66 @@ App.getFullPath = function(self, folders, trailing_slash)
   local ending = trailing_slash and pathsep or ""
   return _mod_root .. table.concat(folders, pathsep) .. ending
 end
+
+-- Override App.loadLuaFolder to merge base-game and mod content directories.
+--
+-- The base implementation calls lfs.dir on self:getFullPath("Lua/<dir>/"), which
+-- now resolves to TerminalTriage/Lua/<dir>/.  If only an override file is placed
+-- there (e.g., humanoid_actions/die.lua), lfs.dir discovers only that file and
+-- all other base-game actions are silently skipped.
+--
+-- This override fixes discovery by iterating the base game directory first
+-- (capturing all base files), then iterating the mod directory for any additional
+-- files that exist only in the mod.  corsixth.require is already patched to
+-- prefer mod files, so base files with mod overrides are automatically superseded.
+local _lf_base = base_lua_dir
+
+App.loadLuaFolder = function(self, dir, no_results, append_to)
+  if dir:sub(-1) ~= pathsep then dir = dir .. pathsep end
+  local results = no_results and "" or (append_to or {})
+  local loaded = {}
+
+  local function process(file)
+    if not file:match("%.lua$") then return end
+    local stem = file:sub(1, -5)
+    local mod_name = dir .. stem
+    if loaded[mod_name] then return end
+    loaded[mod_name] = true
+
+    local status, result = pcall(corsixth.require, mod_name)
+    if not status then
+      print("Error loading " .. dir .. file .. ":\n" .. tostring(result))
+    elseif result == nil then
+      if not no_results then
+        print("Warning: " .. dir .. file .. " returned no value")
+      end
+    else
+      if no_results then
+        print("Warning: " .. dir .. file .. " returned a value:", result)
+      else
+        if type(result) == "table" and result.id then
+          results[result.id] = result
+        elseif type(result) == "function" then
+          results[stem] = result
+        end
+        results[#results + 1] = result
+      end
+    end
+  end
+
+  -- First: iterate base game directory; corsixth.require uses mod override when present.
+  local ok, iter = pcall(lfs.dir, _lf_base .. dir)
+  if ok then
+    for file in iter do process(file) end
+  end
+
+  -- Second: iterate mod directory for new files not present in the base game.
+  local mod_path = self:getFullPath({"Lua", dir}, true)
+  local ok2, iter2 = pcall(lfs.dir, mod_path)
+  if ok2 then
+    for file in iter2 do process(file) end
+  end
+
+  if no_results then return end
+  return results
+end

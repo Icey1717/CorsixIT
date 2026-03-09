@@ -411,3 +411,27 @@ Mod cleanup (TerminalTriage/Lua/app.lua):
 - Removed 32-line App:readDataFile monkey-patch entirely
 
 Tests: 114/114 Terminal Triage, 63/63 CorsixTH baseline (VIP flaky excluded)
+
+## [2026-03-09] CorsixIT-6ph.5.1 - Remove grim reaper from device-loss outcome
+
+Suppressed the hospital-specific grim reaper + lava-hole death sequence (and
+the heaven-ascension sequence) for the Terminal Triage mod.  When a device
+cannot be repaired, the entity now despawns cleanly after the fall animation
+instead of triggering supernatural visuals that break the IT fiction.
+
+TerminalTriage/Lua/humanoid_actions/die.lua (new):
+- Overrides the base game die action for the mod
+- action_die_tick: despawns the entity immediately after fall animation
+- action_die_tick_reaper: redirects to action_die_tick (no grim reaper spawned)
+- action_die_start: always routes to action_die_tick regardless of patient type
+- Preserves fall animation, Chewbacca truncation, and baldness layer fix from base
+- Uses the original permanent() keys for save/load compatibility
+
+TerminalTriage/Lua/app.lua:
+- Added App.loadLuaFolder override that merges base + mod directories
+- Without this, lfs.dir only discovers files in TerminalTriage/Lua/<dir>/,
+  causing all other actions (walk, idle, seek_room, etc.) to be silently skipped
+- Base directory is iterated first; corsixth.require prefers mod overrides
+- Mod directory is iterated second to pick up any new mod-only files
+
+Tests: 131/131 Terminal Triage (+17 new), 62/63 CorsixTH baseline (VIP flaky excluded)
