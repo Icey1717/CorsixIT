@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal Triage · Mapping Browser</title>
+<style>
+  :root {
+    --bg:          #0d1117;
+    --surface:     #161b22;
+    --surface2:    #1c2128;
+    --border:      #30363d;
+    --text:        #e6edf3;
+    --text-muted:  #7d8590;
+    --text-code:   #79c0ff;
+    --accent:      #39d353;
+    --accent-dim:  #122016;
+    --warn:        #d29922;
+    --warn-dim:    #2d1f02;
+    --danger:      #f85149;
+    --radius:      6px;
+    --font-mono:   "Cascadia Code", "Fira Code", ui-monospace, monospace;
+    --font-sans:   -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .logo span { color: var(--text-muted); font-weight: 400; }
+
+  .header-spacer { flex: 1; }
+
+  .edit-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 13px;
+    user-select: none;
+  }
+  .edit-toggle input[type=checkbox] { display: none; }
+  .toggle-track {
+    width: 36px; height: 20px;
+    background: var(--border);
+    border-radius: 10px;
+    position: relative;
+    transition: background .2s;
+  }
+  .toggle-track::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: transform .2s, background .2s;
+  }
+  .edit-toggle.active .toggle-track { background: var(--accent-dim); border: 1px solid var(--accent); }
+  .edit-toggle.active .toggle-track::after { transform: translateX(16px); background: var(--accent); }
+  .edit-toggle.active { color: var(--accent); }
+
+  .reload-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius);
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: var(--font-sans);
+    transition: color .15s, border-color .15s;
+  }
+  .reload-btn:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* ── Tabs ── */
+  .tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    display: flex;
+    gap: 0;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .badge {
+    background: var(--border);
+    border-radius: 10px;
+    font-size: 11px;
+    padding: 1px 6px;
+    color: var(--text-muted);
+  }
+  .tab-btn.active .badge { background: var(--accent-dim); color: var(--accent); }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    padding: 12px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 420px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    font-size: 14px;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 6px 10px 6px 32px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus { border-color: var(--accent); }
+
+  .flip-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: var(--font-sans);
+    padding: 6px 12px;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+  }
+  .flip-btn:hover { color: var(--text); border-color: var(--text-muted); }
+  .flip-btn.active { color: var(--accent); border-color: var(--accent); }
+
+  /* ── Main table area ── */
+  main { flex: 1; padding: 0 20px 20px; }
+
+  .col-headers {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    padding: 10px 12px;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  .entry-list { list-style: none; }
+
+  .entry-item {
+    border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    transition: border-left-color .15s;
+  }
+  .entry-item.unsaved { border-left-color: var(--warn); }
+  .entry-item.expanded { border-left-color: var(--accent); }
+
+  .entry-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto;
+    gap: 0;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .entry-row:hover { background: var(--surface2); }
+
+  .entry-original { color: var(--text-muted); font-size: 13px; }
+  .entry-arrow { color: var(--border); padding: 0 12px; font-size: 12px; }
+  .entry-mod { font-size: 13px; }
+  .entry-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-code);
+    opacity: 0.6;
+    margin-left: 6px;
+    display: none; /* shown when expanded */
+  }
+
+  .expand-icon {
+    color: var(--text-muted);
+    font-size: 11px;
+    padding-left: 10px;
+    user-select: none;
+    transition: transform .15s;
+  }
+  .entry-item.expanded .expand-icon { transform: rotate(90deg); }
+
+  /* ── Detail panel ── */
+  .detail-panel {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 14px 16px 16px;
+    display: none;
+  }
+  .entry-item.expanded .detail-panel { display: block; }
+
+  .detail-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-code);
+    margin-bottom: 12px;
+  }
+  .detail-id .id-label { color: var(--text-muted); font-family: var(--font-sans); font-size: 11px; }
+
+  .field-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 8px;
+    align-items: start;
+  }
+
+  .field-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding-top: 2px;
+    text-align: right;
+  }
+
+  .field-value {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .field-value.original-value { color: var(--text-muted); }
+
+  /* Edit inputs */
+  .field-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 6px 10px;
+    resize: vertical;
+    outline: none;
+    transition: border-color .15s;
+    min-height: 34px;
+  }
+  textarea.field-input { min-height: 70px; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input.warn { border-color: var(--warn); }
+
+  .edit-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .edit-hint.warn-text { color: var(--warn); }
+
+  /* Detail actions */
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 5px 14px;
+    transition: opacity .15s;
+    border: 1px solid transparent;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-save {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+  .btn-save:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-reset {
+    background: none;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+  .btn-revert {
+    background: none;
+    border-color: var(--border);
+    color: var(--warn);
+  }
+  .save-status {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 4px;
+  }
+  .save-status.ok   { color: var(--accent); }
+  .save-status.err  { color: var(--danger); }
+
+  /* ── Empty / loading states ── */
+  .state-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 60px 20px;
+    font-size: 14px;
+  }
+  .state-message .big { font-size: 32px; margin-bottom: 10px; }
+
+  /* ── Status bar ── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 6px 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  #status-msg { flex: 1; }
+  #status-msg.ok   { color: var(--accent); }
+  #status-msg.err  { color: var(--danger); }
+  .lang-file { font-family: var(--font-mono); font-size: 11px; opacity: .6; }
+
+  /* ── Group filter bar (adviser / subtitles tabs) ── */
+  .group-filter {
+    padding: 10px 12px 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .group-filter-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .group-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .group-pill {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    padding: 2px 10px;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .group-pill:hover { color: var(--text); border-color: var(--text-muted); }
+  .group-pill.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Message rows (adviser / subtitles / tips) — single-value layout ── */
+  .msg-row {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    gap: 0;
+    align-items: start;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .msg-row:hover { background: var(--surface2); }
+  .msg-key {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-code);
+    padding-top: 2px;
+    padding-right: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .msg-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  /* ── Message col headers ── */
+  .col-headers.msg-mode {
+    grid-template-columns: 200px 1fr;
+  }
+  .col-headers.msg-mode > span:nth-child(2) { display: none; }
+
+  /* ── Tips section divider ── */
+  .tips-section-header {
+    padding: 10px 12px 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  /* ── No results ── */
+  .no-results {
+    padding: 30px 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🖥️ Terminal Triage <span>· Mapping Browser</span></div>
+  <div class="header-spacer"></div>
+  <label class="edit-toggle" id="edit-toggle-label" title="Toggle edit mode">
+    <input type="checkbox" id="edit-toggle">
+    <div class="toggle-track"></div>
+    ✏ Edit mode
+  </label>
+  <button class="reload-btn" id="reload-btn" title="Re-read language file from disk">↺ Reload</button>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="rooms">Rooms <span class="badge" id="badge-rooms">…</span></button>
+  <button class="tab-btn" data-tab="diseases">Diseases <span class="badge" id="badge-diseases">…</span></button>
+  <button class="tab-btn" data-tab="staff">Staff <span class="badge" id="badge-staff">…</span></button>
+  <button class="tab-btn" data-tab="objects">Objects <span class="badge" id="badge-objects">…</span></button>
+  <button class="tab-btn" data-tab="adviser">Adviser <span class="badge" id="badge-adviser">…</span></button>
+  <button class="tab-btn" data-tab="subtitles">PA &amp; Tips <span class="badge" id="badge-subtitles">…</span></button>
+</div>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="search" type="search"
+           placeholder="Search original or Terminal Triage name…" autocomplete="off">
+  </div>
+  <button class="flip-btn" id="flip-btn" title="Swap sort direction — search from either side">⇄ Flip</button>
+</div>
+
+<main>
+  <div class="group-filter" id="group-filter" style="display:none">
+    <span class="group-filter-label">Group:</span>
+    <div class="group-pills" id="group-pills"></div>
+  </div>
+  <div class="col-headers" id="col-headers">
+    <span id="col-left">Original (CorsixTH)</span>
+    <span></span>
+    <span id="col-right">Terminal Triage</span>
+  </div>
+  <ul class="entry-list" id="entry-list">
+    <li class="state-message"><div class="big">⏳</div>Loading…</li>
+  </ul>
+</main>
+
+<footer>
+  <span id="status-msg">Ready</span>
+  <span class="lang-file" id="lang-file-path">…/english_terminal_triage.lua</span>
+</footer>
+
+<script>
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let mappings     = null;
+let currentTab   = "rooms";
+let editMode     = false;
+let flipped      = false;   // true → show mod on left, original on right
+let searchQuery  = "";
+let expandedId   = null;    // "diseases:bloaty_head" etc.
+let pendingEdits = {};      // key "category:id" → { field: newValue }
+let unsavedIds   = new Set();
+let activeGroup  = null;    // for adviser / subtitles group filter
+
+// Tabs that show messages (no original↔mod two-column layout)
+const MSG_TABS = new Set(["adviser", "subtitles"]);
+
+// ---------------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------------
+async function loadMappings(reload = false) {
+  setStatus("Loading…", "");
+  try {
+    const r = await fetch(reload ? "/api/reload" : "/api/mappings");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    mappings = await r.json();
+    updateBadges();
+    render();
+    setStatus("Loaded " + new Date().toLocaleTimeString(), "ok");
+  } catch (e) {
+    setStatus("Error: " + e.message, "err");
+    document.getElementById("entry-list").innerHTML =
+      `<li class="state-message"><div class="big">⚠️</div>Could not connect to server.<br>
+       Make sure <code>server.js</code> is running (run <code>companion.bat</code>).</li>`;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// UI helpers
+// ---------------------------------------------------------------------------
+function setStatus(msg, cls) {
+  const el = document.getElementById("status-msg");
+  el.textContent = msg;
+  el.className = cls;
+}
+
+function updateBadges() {
+  if (!mappings) return;
+  for (const tab of ["rooms", "diseases", "staff", "objects"]) {
+    const el = document.getElementById("badge-" + tab);
+    if (el) el.textContent = mappings[tab]?.length ?? 0;
+  }
+  const ba = document.getElementById("badge-adviser");
+  if (ba) ba.textContent = mappings.adviser?.length ?? 0;
+  const bs = document.getElementById("badge-subtitles");
+  if (bs) bs.textContent = (mappings.subtitles?.length ?? 0) + (mappings.tips?.length ?? 0);
+}
+
+function getDisplayName(entry) {
+  if (entry.text !== undefined) return entry.text;    // message entries
+  const m = entry.mod;
+  if (typeof m === "string") return m;
+  return m.name || m.long_name || entry.id;
+}
+
+function msgKey(entry) {
+  // Concise label shown in the left column of a message row
+  if (entry.index !== undefined) return `#${entry.index}`;  // tip
+  return entry.label || entry.key || entry.id;
+}
+
+function getSearchableText(entry) {
+  if (MSG_TABS.has(currentTab)) {
+    return [msgKey(entry), entry.text || ""].join(" ").toLowerCase();
+  }
+  return [entry.original, getDisplayName(entry)].join(" ").toLowerCase();
+}
+
+// For the "subtitles" tab we merge PA subtitles + tips into one list
+function rawItems(tab) {
+  if (tab === "subtitles") {
+    const subs  = (mappings?.subtitles ?? []).map(e => ({ ...e, group: e.group }));
+    const tips  = (mappings?.tips ?? []).map(e => ({ ...e, group: "Tips of the Day" }));
+    return [...subs, ...tips];
+  }
+  return mappings?.[tab] ?? [];
+}
+
+function filteredItems() {
+  const raw = rawItems(currentTab);
+  const q   = searchQuery.toLowerCase().trim();
+  let items = q ? raw.filter(e => getSearchableText(e).includes(q)) : raw;
+  if (MSG_TABS.has(currentTab) && activeGroup) {
+    items = items.filter(e => e.group === activeGroup);
+  }
+  return items;
+}
+
+// ---------------------------------------------------------------------------
+// Group filter bar
+// ---------------------------------------------------------------------------
+function populateGroupPills() {
+  const allItems = rawItems(currentTab);
+  const groups   = [...new Set(allItems.map(e => e.group).filter(Boolean))];
+  const container = document.getElementById("group-pills");
+  container.innerHTML = "";
+
+  // "All" pill
+  const all = document.createElement("button");
+  all.className = "group-pill" + (activeGroup === null ? " active" : "");
+  all.textContent = "All";
+  all.addEventListener("click", () => { activeGroup = null; render(); });
+  container.appendChild(all);
+
+  for (const g of groups) {
+    const btn = document.createElement("button");
+    btn.className = "group-pill" + (activeGroup === g ? " active" : "");
+    btn.textContent = g;
+    btn.addEventListener("click", () => { activeGroup = g; render(); });
+    container.appendChild(btn);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Render
+// ---------------------------------------------------------------------------
+function render() {
+  const list    = document.getElementById("entry-list");
+  const isMsg   = MSG_TABS.has(currentTab);
+  const colHdr  = document.getElementById("col-headers");
+  const flipBtn = document.getElementById("flip-btn");
+  const groupFilter = document.getElementById("group-filter");
+
+  if (isMsg) {
+    groupFilter.style.display = "flex";
+    populateGroupPills();
+    colHdr.className = "col-headers msg-mode";
+    document.getElementById("col-left").textContent  = "Key";
+    document.getElementById("col-right").textContent = "Text";
+    flipBtn.style.display = "none";
+  } else {
+    groupFilter.style.display = "none";
+    colHdr.className = "col-headers";
+    document.getElementById("col-left").textContent  = flipped ? "Terminal Triage"    : "Original (CorsixTH)";
+    document.getElementById("col-right").textContent = flipped ? "Original (CorsixTH)" : "Terminal Triage";
+    flipBtn.style.display = "";
+  }
+
+  const items = filteredItems();
+  if (!items.length) {
+    list.innerHTML = `<li class="no-results">No entries match "${esc(searchQuery)}"</li>`;
+    return;
+  }
+
+  list.innerHTML = "";
+  for (const entry of items) {
+    list.appendChild(isMsg ? buildMsgRow(entry) : buildRow(entry));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Entity rows (Rooms / Diseases / Staff / Objects)
+// ---------------------------------------------------------------------------
+function buildRow(entry) {
+  const key = `${currentTab}:${entry.id}`;
+  const isExpanded = expandedId === key;
+  const isUnsaved  = unsavedIds.has(key);
+
+  const li = document.createElement("li");
+  li.className = "entry-item" +
+    (isExpanded ? " expanded" : "") +
+    (isUnsaved  ? " unsaved"  : "");
+  li.dataset.key = key;
+
+  const origName = entry.original || "—";
+  const modName  = getDisplayName(entry);
+  const leftName  = flipped ? modName  : origName;
+  const rightName = flipped ? origName : modName;
+
+  const row = document.createElement("div");
+  row.className = "entry-row";
+  row.innerHTML = `
+    <span class="entry-original">${esc(leftName)}</span>
+    <span class="entry-arrow">→</span>
+    <span class="entry-mod">${esc(rightName)}</span>
+    <span class="expand-icon">▶</span>`;
+  row.addEventListener("click", () => toggleExpand(key));
+  li.appendChild(row);
+
+  const detail = document.createElement("div");
+  detail.className = "detail-panel";
+  detail.id = "detail-" + key.replace(/[.:]/g, "-");
+  if (isExpanded) detail.innerHTML = buildDetailHTML(entry);
+  li.appendChild(detail);
+
+  return li;
+}
+
+// ---------------------------------------------------------------------------
+// Message rows (Adviser / PA & Tips)
+// ---------------------------------------------------------------------------
+function buildMsgRow(entry) {
+  const key = `${currentTab}:${entry.id}`;
+  const isExpanded = expandedId === key;
+  const isUnsaved  = unsavedIds.has(key);
+
+  const li = document.createElement("li");
+  li.className = "entry-item" +
+    (isExpanded ? " expanded" : "") +
+    (isUnsaved  ? " unsaved"  : "");
+  li.dataset.key = key;
+
+  const row = document.createElement("div");
+  row.className = "msg-row";
+  row.innerHTML = `
+    <span class="msg-key" title="${esc(entry.id)}">${esc(msgKey(entry))}</span>
+    <span class="msg-text">${esc(entry.text || "—")}</span>
+    <span class="expand-icon">▶</span>`;
+  row.addEventListener("click", () => toggleExpand(key));
+  li.appendChild(row);
+
+  const detail = document.createElement("div");
+  detail.className = "detail-panel";
+  detail.id = "detail-" + key.replace(/[.:]/g, "-");
+  if (isExpanded) detail.innerHTML = buildMsgDetailHTML(entry);
+  li.appendChild(detail);
+
+  return li;
+}
+
+// ---------------------------------------------------------------------------
+// Expand / collapse
+// ---------------------------------------------------------------------------
+function toggleExpand(key) {
+  if (expandedId === key) {
+    expandedId = null;
+  } else {
+    expandedId = key;
+    const safeKey = key.replace(/[.:]/g, "-");
+    const panel = document.getElementById("detail-" + safeKey);
+    if (panel) {
+      const [cat, ...rest] = key.split(":");
+      const id = rest.join(":");
+      const entry = findEntry(cat, id);
+      if (entry) {
+        panel.innerHTML = MSG_TABS.has(cat)
+          ? buildMsgDetailHTML(entry)
+          : buildDetailHTML(entry);
+      }
+    }
+  }
+  render();
+}
+
+function findEntry(cat, id) {
+  if (cat === "subtitles") {
+    return rawItems("subtitles").find(e => e.id === id);
+  }
+  return mappings?.[cat]?.find(e => e.id === id);
+}
+
+// ---------------------------------------------------------------------------
+// Detail panel — entity entries
+// ---------------------------------------------------------------------------
+function buildDetailHTML(entry) {
+  const cat  = currentTab;
+  const key  = `${cat}:${entry.id}`;
+  const edits = pendingEdits[key] || {};
+
+  let fields = [];
+  if (cat === "rooms") {
+    fields = [
+      { label: "Original",   value: entry.original,      field: null },
+      { label: "Short name", value: entry.mod.name,      field: "name" },
+      { label: "Long name",  value: entry.mod.long_name, field: "long_name" },
+    ];
+  } else if (cat === "diseases") {
+    fields = [
+      { label: "Original",   value: entry.original,           field: null },
+      { label: "Treated at", value: entry.treatment_room_name || "—", field: null },
+      { label: "Name",       value: entry.mod.name,           field: "name" },
+      { label: "Cause",      value: entry.mod.cause,          field: "cause",    multi: true },
+      { label: "Symptoms",   value: entry.mod.symptoms,       field: "symptoms", multi: true },
+      { label: "Cure",       value: entry.mod.cure,           field: "cure",     multi: true },
+    ];
+  } else if (cat === "staff") {
+    fields = [
+      { label: "Original", value: entry.original, field: null },
+      { label: "Type",     value: entry.type,     field: null },
+      { label: "Name",     value: entry.mod.name, field: "name" },
+    ];
+  } else if (cat === "objects") {
+    fields = [
+      { label: "Original", value: entry.original, field: null },
+      { label: "Name",     value: entry.mod.name, field: "name" },
+    ];
+  }
+
+  const idSafe = entry.id.replace(/[.:]/g, "-");
+  let html = `<div class="detail-id"><span class="id-label">id: </span>${esc(entry.id)}</div>
+  <div class="field-grid">`;
+
+  for (const f of fields) {
+    const currentVal = (f.field && edits[f.field] !== undefined) ? edits[f.field] : f.value;
+    const isReadOnly = !f.field || !editMode;
+    html += `<div class="field-row"><span class="field-label">${esc(f.label)}</span>`;
+    if (isReadOnly) {
+      html += `<span class="${f.field ? "field-value" : "field-value original-value"}">${esc(currentVal || "—")}</span>`;
+    } else {
+      const tag = f.multi ? "textarea" : "input";
+      const inputId = `fi-${idSafe}-${f.field}`;
+      html += `<div>
+        <${tag} class="field-input" id="${inputId}"
+          data-key="${esc(key)}" data-field="${esc(f.field)}"
+          ${f.multi ? "" : `type="text"`}
+        >${esc(currentVal || "")}</${tag}>
+        <div class="edit-hint" id="hint-${inputId}"></div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  const editableFields = fields.filter(f => f.field);
+  if (editMode && editableFields.length > 0) {
+    html += `<div class="detail-actions">
+      <button class="btn btn-save" id="save-${idSafe}" onclick="saveEntry('${key}')">💾 Save</button>
+      <button class="btn btn-reset" onclick="resetPending('${key}')">↺ Reset to saved</button>
+      <button class="btn btn-revert" onclick="revertToOriginal('${key}')" title="Set fields to original CorsixTH values">⚠ Revert to original</button>
+      <span class="save-status" id="sst-${idSafe}"></span>
+    </div>
+    <div class="edit-hint" style="margin-top:8px;color:var(--text-muted)">⚠ Reload the game to see changes take effect.</div>`;
+  }
+  return html;
+}
+
+// ---------------------------------------------------------------------------
+// Detail panel — message entries (adviser / subtitles / tips)
+// ---------------------------------------------------------------------------
+function buildMsgDetailHTML(entry) {
+  const cat    = currentTab;
+  const key    = `${cat}:${entry.id}`;
+  const edits  = pendingEdits[key] || {};
+  const idSafe = entry.id.replace(/[.:]/g, "-");
+
+  const currentText = edits.text !== undefined ? edits.text : entry.text;
+
+  let html = `<div class="detail-id">
+    <span class="id-label">id: </span>${esc(entry.id)}
+    ${entry.group ? ` &nbsp;·&nbsp; <span class="id-label">group: </span>${esc(entry.group)}` : ""}
+  </div>
+  <div class="field-grid">
+    <div class="field-row">
+      <span class="field-label">Text</span>`;
+
+  if (!editMode) {
+    html += `<span class="field-value">${esc(currentText || "—")}</span>`;
+  } else {
+    const inputId = `fi-${idSafe}-text`;
+    html += `<div>
+      <textarea class="field-input" id="${inputId}"
+        data-key="${esc(key)}" data-field="text"
+      >${esc(currentText || "")}</textarea>
+      <div class="edit-hint" id="hint-${inputId}"></div>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+
+  if (editMode) {
+    html += `<div class="detail-actions">
+      <button class="btn btn-save" id="save-${idSafe}" onclick="saveEntry('${key}')">💾 Save</button>
+      <button class="btn btn-reset" onclick="resetPending('${key}')">↺ Reset to saved</button>
+      <span class="save-status" id="sst-${idSafe}"></span>
+    </div>
+    <div class="edit-hint" style="margin-top:8px;color:var(--text-muted)">⚠ Reload the game to see changes take effect.</div>`;
+  }
+  return html;
+}
+
+// ---------------------------------------------------------------------------
+// Edit actions
+// ---------------------------------------------------------------------------
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  if (!el.classList.contains("field-input")) return;
+  const key   = el.dataset.key;
+  const field = el.dataset.field;
+  const val   = el.value;
+
+  if (!pendingEdits[key]) pendingEdits[key] = {};
+  pendingEdits[key][field] = val;
+  unsavedIds.add(key);
+
+  const li = el.closest(".entry-item");
+  if (li) li.classList.add("unsaved");
+
+  const hint = document.getElementById("hint-" + el.id);
+  if (hint) {
+    if (!val.trim()) {
+      hint.textContent = "⚠ Must not be empty";
+      hint.className = "edit-hint warn-text";
+      el.classList.add("warn");
+    } else if (val.length > 120) {
+      hint.textContent = `${val.length} chars — long strings may be truncated in-game`;
+      hint.className = "edit-hint warn-text";
+      el.classList.remove("warn");
+    } else {
+      hint.textContent = "";
+      hint.className = "edit-hint";
+      el.classList.remove("warn");
+    }
+  }
+});
+
+async function saveEntry(key) {
+  const colonIdx = key.indexOf(":");
+  const cat = key.slice(0, colonIdx);
+  const id  = key.slice(colonIdx + 1);
+  const edits = pendingEdits[key];
+  if (!edits || Object.keys(edits).length === 0) return;
+
+  for (const [, value] of Object.entries(edits)) {
+    if (!value.trim()) { setSaveStatus(key, "⚠ Fix empty fields first", "err"); return; }
+  }
+
+  const idSafe = id.replace(/[.:]/g, "-");
+  const saveBtn = document.getElementById("save-" + idSafe);
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "Saving…"; }
+
+  let lastEntry = null;
+  for (const [field, value] of Object.entries(edits)) {
+    try {
+      const r = await fetch("/api/entry", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: cat, id, field, value: value.trim() }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      lastEntry = data.entry;
+    } catch (e) {
+      setSaveStatus(key, "✗ " + e.message, "err");
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "💾 Save"; }
+      return;
+    }
+  }
+
+  // Update local mappings cache
+  if (lastEntry) {
+    const store = cat === "subtitles" ? "subtitles"
+                : cat === "adviser"   ? "adviser"
+                : null;
+    if (store && mappings[store]) {
+      const idx = mappings[store].findIndex(e => e.id === id);
+      if (idx !== -1) mappings[store][idx] = lastEntry;
+    } else if (mappings[cat]) {
+      const idx = mappings[cat].findIndex(e => e.id === id);
+      if (idx !== -1) mappings[cat][idx] = lastEntry;
+    }
+  }
+
+  delete pendingEdits[key];
+  unsavedIds.delete(key);
+
+  const savedEntry = lastEntry || findEntry(cat, id);
+  const now = new Date().toLocaleTimeString();
+  const label = MSG_TABS.has(cat)
+    ? (msgKey(savedEntry) + ": " + (savedEntry?.text || "").slice(0, 40))
+    : getDisplayName(savedEntry);
+  setStatus(`✓ Saved "${label}" at ${now}`, "ok");
+  setSaveStatus(key, `✓ Saved ${now}`, "ok");
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "💾 Save"; }
+
+  // Re-render the row
+  const li = document.querySelector(`.entry-item[data-key="${key}"]`);
+  if (li && savedEntry) {
+    li.classList.remove("unsaved");
+    const newLi = MSG_TABS.has(cat) ? buildMsgRow(savedEntry) : buildRow(savedEntry);
+    li.replaceWith(newLi);
+    const newDetail = newLi.querySelector(".detail-panel");
+    if (newDetail) {
+      newLi.classList.add("expanded");
+      newDetail.style.display = "block";
+      newDetail.innerHTML = MSG_TABS.has(cat)
+        ? buildMsgDetailHTML(savedEntry)
+        : buildDetailHTML(savedEntry);
+    }
+  }
+}
+
+function resetPending(key) {
+  delete pendingEdits[key];
+  unsavedIds.delete(key);
+  const colonIdx = key.indexOf(":");
+  const cat = key.slice(0, colonIdx);
+  const id  = key.slice(colonIdx + 1);
+  const entry = findEntry(cat, id);
+  if (!entry) return;
+  const safeKey = key.replace(/[.:]/g, "-");
+  const panel = document.getElementById("detail-" + safeKey);
+  if (panel) panel.innerHTML = MSG_TABS.has(cat) ? buildMsgDetailHTML(entry) : buildDetailHTML(entry);
+  const li = document.querySelector(`.entry-item[data-key="${key}"]`);
+  if (li) li.classList.remove("unsaved");
+}
+
+function revertToOriginal(key) {
+  const colonIdx = key.indexOf(":");
+  const cat = key.slice(0, colonIdx);
+  const id  = key.slice(colonIdx + 1);
+  if (MSG_TABS.has(cat)) return; // no original for message entries
+  const entry = mappings[cat]?.find(e => e.id === id);
+  if (!entry) return;
+  const origName = entry.original;
+  if (!pendingEdits[key]) pendingEdits[key] = {};
+  pendingEdits[key].name = origName;
+  if (cat === "rooms") pendingEdits[key].long_name = origName;
+  unsavedIds.add(key);
+  const safeKey = key.replace(/[.:]/g, "-");
+  const panel = document.getElementById("detail-" + safeKey);
+  if (panel) panel.innerHTML = buildDetailHTML(entry);
+  const li = document.querySelector(`.entry-item[data-key="${key}"]`);
+  if (li) li.classList.add("unsaved");
+}
+
+function setSaveStatus(key, msg, cls) {
+  const id = key.slice(key.indexOf(":") + 1).replace(/[.:]/g, "-");
+  const el = document.getElementById("sst-" + id);
+  if (el) { el.textContent = msg; el.className = "save-status " + cls; }
+}
+
+// ---------------------------------------------------------------------------
+// Event wiring
+// ---------------------------------------------------------------------------
+document.getElementById("tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".tab-btn");
+  if (!btn) return;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentTab  = btn.dataset.tab;
+  expandedId  = null;
+  activeGroup = null;
+  render();
+});
+
+document.getElementById("search").addEventListener("input", (e) => {
+  searchQuery = e.target.value;
+  expandedId  = null;
+  render();
+});
+
+document.getElementById("flip-btn").addEventListener("click", () => {
+  flipped = !flipped;
+  document.getElementById("flip-btn").classList.toggle("active", flipped);
+  render();
+});
+
+document.getElementById("reload-btn").addEventListener("click", () => {
+  loadMappings(true);
+});
+
+document.getElementById("edit-toggle").addEventListener("change", (e) => {
+  editMode = e.target.checked;
+  document.getElementById("edit-toggle-label").classList.toggle("active", editMode);
+  if (expandedId) {
+    const colonIdx = expandedId.indexOf(":");
+    const cat = expandedId.slice(0, colonIdx);
+    const id  = expandedId.slice(colonIdx + 1);
+    const entry = findEntry(cat, id);
+    if (entry) {
+      const safeKey = expandedId.replace(/[.:]/g, "-");
+      const panel = document.getElementById("detail-" + safeKey);
+      if (panel) panel.innerHTML = MSG_TABS.has(cat) ? buildMsgDetailHTML(entry) : buildDetailHTML(entry);
+    }
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+function esc(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
+loadMappings();
+</script>
+</body>
+</html>
