@@ -7,6 +7,11 @@ REM When called without arguments, runs headless_tests\smoke.lua.
 REM SDL_VIDEODRIVER=dummy and SDL_AUDIODRIVER=dummy cause SDL to operate
 REM without a real display or audio device — safe for CI environments.
 REM
+REM Examples:
+REM   test_runner.bat                                     (smoke test)
+REM   test_runner.bat headless_tests\smoke.lua            (explicit smoke)
+REM   test_runner.bat Lua\tests\simulation_scenario.lua   (gameplay scenario)
+REM
 REM Set CORSIXTH_EXE if the default build path is wrong for your machine.
 
 set CORSIXTH_EXE=G:\repos\CorsixIT\build\win-x64-rel\CorsixTH\RelWithDebInfo\CorsixTH.exe
