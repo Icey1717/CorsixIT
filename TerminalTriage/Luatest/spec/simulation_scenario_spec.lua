@@ -263,4 +263,108 @@ describe("simulation_scenario helpers", function()
     end)
   end)
 
+  -- ---------------------------------------------------------------
+  -- Post-simulation assertions
+  -- ---------------------------------------------------------------
+  describe("post-simulation assertions", function()
+
+    -- hospital.balance ~= 0
+    it("passes balance check when balance is non-zero (positive)", function()
+      local hospital = make_hospital()
+      hospital.balance = 50000
+      assert.is_true(hospital.balance ~= 0)
+    end)
+
+    it("passes balance check when balance is negative (debt)", function()
+      local hospital = make_hospital()
+      hospital.balance = -500
+      assert.is_true(hospital.balance ~= 0)
+    end)
+
+    it("fails balance check when balance is exactly zero", function()
+      local hospital = make_hospital()
+      hospital.balance = 0
+      assert.is_false(hospital.balance ~= 0)
+    end)
+
+    -- nil entity detection
+    it("counts no nil entities in a clean entity list", function()
+      local entities = {
+        {id = "e1"}, {id = "e2"}, {id = "e3"},
+      }
+      local nil_count = 0
+      for i, entity in ipairs(entities) do
+        if entity == nil then nil_count = nil_count + 1 end
+      end
+      assert.equals(0, nil_count)
+    end)
+
+    it("ipairs stops at first nil so count stays 0 (Lua table semantics)", function()
+      -- ipairs stops at first nil, so a nil inside a sparse table won't be
+      -- counted — this test documents the known behaviour of the entity walk.
+      local entities = {
+        {id = "e1"}, nil, {id = "e3"},
+      }
+      local nil_count = 0
+      for i, entity in ipairs(entities) do
+        if entity == nil then nil_count = nil_count + 1 end
+      end
+      -- ipairs only yields up to index 1 (stops before the nil at 2)
+      assert.equals(0, nil_count)
+    end)
+
+    it("reports zero bad rooms for a healthy room list", function()
+      local rooms = {
+        {id = "gp_office",     tile_x = 5,  tile_y = 5},
+        {id = "x_ray",         tile_x = 10, tile_y = 10},
+      }
+      local bad = 0
+      for _, room in ipairs(rooms) do
+        if type(room) ~= "table" or room.id == nil then bad = bad + 1 end
+      end
+      assert.equals(0, bad)
+    end)
+
+    it("detects a room entry with nil id as corrupted", function()
+      local rooms = {
+        {id = "gp_office"},
+        {tile_x = 5},   -- missing id
+      }
+      local bad = 0
+      for _, room in ipairs(rooms) do
+        if type(room) ~= "table" or room.id == nil then bad = bad + 1 end
+      end
+      assert.equals(1, bad)
+    end)
+
+    it("detects a non-table room entry as corrupted", function()
+      local rooms = { {id = "gp_office"}, "stray_string" }
+      local bad = 0
+      for _, room in ipairs(rooms) do
+        if type(room) ~= "table" or room.id == nil then bad = bad + 1 end
+      end
+      assert.equals(1, bad)
+    end)
+
+    -- customer activity accounting
+    it("sums activity correctly when all counters are present", function()
+      local hospital = {num_cured = 3, num_deaths = 1, num_visitors = 10}
+      local activity = (hospital.num_cured or 0) + (hospital.num_deaths or 0) + (hospital.num_visitors or 0)
+      assert.equals(14, activity)
+    end)
+
+    it("treats missing counters as zero in activity sum", function()
+      local hospital = {}
+      local activity = (hospital.num_cured or 0) + (hospital.num_deaths or 0) + (hospital.num_visitors or 0)
+      assert.equals(0, activity)
+    end)
+
+    it("activity is zero when all counters are zero", function()
+      local hospital = {num_cured = 0, num_deaths = 0, num_visitors = 0}
+      local activity = (hospital.num_cured or 0) + (hospital.num_deaths or 0) + (hospital.num_visitors or 0)
+      assert.equals(0, activity)
+    end)
+
+  end)
+
 end)

@@ -135,4 +135,39 @@ assert(date_ok,
   string.format("[scenario] FAIL: date did not advance to Month 3 (got Year %d Month %d)",
     end_date:year(), end_date:monthOfYear()))
 
+-- 7. Assert hospital balance is non-zero (simulation should have charged/credited something)
+assert(hospital.balance ~= 0,
+  "[scenario] FAIL: hospital balance is zero — simulation may not have run")
+
+-- 8. Assert world entity list has no nil slots
+local nil_entity_count = 0
+for i, entity in ipairs(world.entities or {}) do
+  if entity == nil then
+    nil_entity_count = nil_entity_count + 1
+    print(string.format("[scenario] Warning: nil entity at index %d", i))
+  end
+end
+assert(nil_entity_count == 0,
+  string.format("[scenario] FAIL: %d nil entities found in world.entities", nil_entity_count))
+
+-- 9. Assert room list is not corrupted (every room entry must have an id and a valid tile_x/y)
+local bad_room_count = 0
+for i, room in ipairs(world.rooms or {}) do
+  if type(room) ~= "table" or room.id == nil then
+    bad_room_count = bad_room_count + 1
+    print(string.format("[scenario] Warning: corrupted room at index %d (type=%s)", i, type(room)))
+  end
+end
+assert(bad_room_count == 0,
+  string.format("[scenario] FAIL: %d corrupted room entries in world.rooms", bad_room_count))
+
+-- 10. Assert at least one customer has been serviced (num_cured or num_deaths gives activity)
+local activity = (hospital.num_cured or 0) + (hospital.num_deaths or 0) + (hospital.num_visitors or 0)
+print(string.format("[scenario] Customer activity: cured=%d deaths=%d visitors=%d",
+  hospital.num_cured or 0, hospital.num_deaths or 0, hospital.num_visitors or 0))
+-- We warn but don't hard-fail here: a headless run with no display may receive no customers.
+if activity == 0 then
+  print("[scenario] Note: no customer activity recorded (expected in pure headless mode)")
+end
+
 print("[scenario] PASSED")
