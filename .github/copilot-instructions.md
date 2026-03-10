@@ -27,7 +27,22 @@ lua %APPDATA%\luarocks\bin\busted --lpath="../Lua/?.lua"
 
 All tests must pass before the task is considered done.
 
-### 2. Launch the game and check stdio
+### 2. Headless engine test (test_runner.bat)
+
+Run the simulation scenario through the actual engine with no display required:
+```
+cd TerminalTriage && test_runner.bat Lua\tests\simulation_scenario.lua
+```
+
+`SDL_VIDEODRIVER=dummy` and `SDL_AUDIODRIVER=dummy` are set by the bat file — no display or audio device needed. The process must exit 0 and print `[scenario] PASSED`. Any `[scenario] FAIL:` line or non-zero exit is a test failure.
+
+Alternatively, run both tiers (unit tests + engine integration) via the PowerShell runner:
+```
+pwsh -File scripts\run_simulation_test.ps1
+```
+Use `-SkipIntegration` to run only the Lua unit tests when CorsixTH.exe is not built.
+
+### 3. Launch the game and check stdio
 
 Launch the mod and monitor stdout/stderr for errors and warnings:
 ```
