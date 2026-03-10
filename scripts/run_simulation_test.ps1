@@ -9,13 +9,11 @@
     Runs the busted spec suite under TerminalTriage/Luatest/, which includes
     unit tests for every assertion condition in simulation_scenario.lua.
 
-  Tier 2 – Full engine integration test (requires a real or virtual display)
+  Tier 2 – Full engine integration test (no real display required)
     Launches CorsixTH with --headless-test pointing at simulation_scenario.lua.
-    SDL_AUDIODRIVER=dummy suppresses audio errors.
-    NOTE: SDL_VIDEODRIVER=dummy cannot be used until CorsixIT-5kv is resolved
-    (SDL_WINDOW_OPENGL is passed unconditionally in th_gfx_sdl.cpp).
-    On CI, use Xvfb (Linux) or a virtual display; on Windows, a real display
-    or RDP session is required.
+    SDL_AUDIODRIVER=dummy and SDL_VIDEODRIVER=dummy suppress all display/audio
+    requirements.  CorsixIT-5kv is now resolved: th_gfx_sdl.cpp detects the
+    dummy driver via SDL_getenv("SDL_VIDEODRIVER") and skips SDL_WINDOW_OPENGL.
 
 .PARAMETER SkipIntegration
   When set, only the Lua unit tests are run (Tier 1).  Useful for CI
@@ -101,9 +99,7 @@ $scenarioScript = Join-Path $modDir "Lua\tests\simulation_scenario.lua"
 $interpreterLua = Join-Path $repoRoot "CorsixTH\CorsixTH.lua"
 
 $env:SDL_AUDIODRIVER = "dummy"
-# SDL_VIDEODRIVER=dummy cannot be set until CorsixIT-5kv is fixed.
-# Uncomment the line below once SDL_WINDOW_OPENGL is conditionally skipped:
-# $env:SDL_VIDEODRIVER = "dummy"
+$env:SDL_VIDEODRIVER = "dummy"
 
 Write-Host "Launching: $CorsixTHExe --headless-test=<scenario>"
 & $CorsixTHExe `

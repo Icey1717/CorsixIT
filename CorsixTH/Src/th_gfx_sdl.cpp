@@ -437,9 +437,22 @@ render_target::render_target(const render_target_creation_params& params)
       direct_zoom{params.direct_zoom} {
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
   pixel_format = SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
+
+  // Skip SDL_WINDOW_OPENGL when running under a headless/offscreen SDL video
+  // driver (SDL_VIDEODRIVER=dummy or offscreen).  Those drivers have no OpenGL
+  // support, so requesting it causes SDL_CreateWindow to fail immediately.
+  // SDL_CreateRenderer still selects the best available backend on its own.
+  const char* video_driver = SDL_getenv("SDL_VIDEODRIVER");
+  bool headless_driver =
+      video_driver && (std::strcmp(video_driver, "dummy") == 0 ||
+                       std::strcmp(video_driver, "offscreen") == 0);
+  Uint32 window_flags =
+      headless_driver ? SDL_WINDOW_RESIZABLE
+                      : SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
   window = SDL_CreateWindow("CorsixTH", SDL_WINDOWPOS_UNDEFINED,
                             SDL_WINDOWPOS_UNDEFINED, width, height,
-                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+                            window_flags);
   if (!window) {
     throw std::runtime_error(SDL_GetError());
   }
