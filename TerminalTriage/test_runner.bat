@@ -4,8 +4,9 @@ REM
 REM Usage:  test_runner.bat [path\to\test_script.lua]
 REM
 REM When called without arguments, runs headless_tests\smoke.lua.
-REM SDL_VIDEODRIVER=dummy and SDL_AUDIODRIVER=dummy cause SDL to operate
-REM without a real display or audio device — safe for CI environments.
+REM SDL_AUDIODRIVER=dummy prevents audio device errors in CI/test environments.
+REM NOTE: SDL_VIDEODRIVER=dummy cannot be used because the OpenGL renderer
+REM requires a real or virtual display. On CI, use Xvfb or a virtual display.
 REM
 REM Examples:
 REM   test_runner.bat                                     (smoke test)
@@ -23,7 +24,6 @@ if "%~1"=="" (
     set TEST_SCRIPT=%~1
 )
 
-set SDL_VIDEODRIVER=dummy
 set SDL_AUDIODRIVER=dummy
 
 "%CORSIXTH_EXE%" ^

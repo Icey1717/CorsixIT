@@ -20,7 +20,11 @@ local hospital = world:getLocalPlayerHospital()
 -- fee charged by Hospital:addStaff().
 local function hireStaffMember(humanoid_class, staff_class_string)
   local profile = StaffProfile(world, humanoid_class, staff_class_string)
-  profile:init(0.5)
+  if humanoid_class == "Doctor" then
+    profile:initDoctor(0, 0, 0, nil, nil, 0.5)
+  else
+    profile:init(0.5)
+  end
   local staff = world:newEntity(humanoid_class, 2, 2)
   staff:setProfile(profile)
 
@@ -117,8 +121,8 @@ app:runSimulatedTicks(500)
 
 -- 5. Advance the game to Year 1 Month 3
 print("[scenario] Advancing to Year 1 Month 3...")
-local ticks_used = world:advanceToDate(1, 3, 1)
-print(string.format("[scenario] Advance complete after %d ticks", ticks_used))
+world:advanceToDate(1, 3, 1)
+print("[scenario] Advance complete")
 
 -- 6. Assert the date advanced
 local end_date = world:date()
