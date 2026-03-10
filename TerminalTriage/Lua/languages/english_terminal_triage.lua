@@ -932,6 +932,20 @@ misc.epidemic_no_icon_to_toggle = "Unable to show/hide compromised icons - no ac
 misc.epidemic_no_diseases      = "Cannot create malware outbreak - no spreading issues available."
 misc.epidemic_no_receptionist  = "Cannot create malware outbreak - no staffed service counter."
 
+-- Infrastructure disruption event (earthquake) toggle messages
+misc.earthquakes_off = "Infrastructure disruption events are disabled."
+misc.earthquakes_on  = "Infrastructure disruption events are re-enabled."
+
+-- ============================================================
+-- SECTION 20b: Cheat window — infrastructure disruption labels
+-- ============================================================
+
+cheats_window.cheats.toggle_earthquake = "Toggle infrastructure events"
+cheats_window.cheats.earthquake        = "Trigger infrastructure disruption"
+
+tooltip.cheats_window.cheats.toggle_earthquake = "Enable or disable random infrastructure disruption events"
+tooltip.cheats_window.cheats.earthquake        = "Triggers an infrastructure disruption event immediately"
+
 -- ============================================================
 -- SECTION 21: Dynamic info epidemic overrides
 -- ============================================================

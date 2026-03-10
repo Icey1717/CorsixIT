@@ -95,6 +95,7 @@ local function load_language_file(path)
     room_descriptions = auto_table(),
     totd_window      = auto_table(),
     subtitles        = {},
+    cheats_window    = auto_table(),
   }
 
   setmetatable(env, {__index = _G})
@@ -767,6 +768,102 @@ describe("dynamic_info epidemic-related overrides", function()
     assert.truthy(#v > 0, "dynamic_info.patient.actions.epidemic_vaccinated must be overridden")
     assert.falsy(v:lower():find("contagious", 1, true),
       "dynamic_info.patient.actions.epidemic_vaccinated must not say 'contagious': " .. v)
+  end)
+
+end)
+
+
+
+-- __ Infrastructure disruption (earthquake) string overrides ______
+
+describe("infrastructure disruption string overrides", function()
+
+  it("adviser.earthquake.alert is overridden and contains 'infrastructure'", function()
+    local e = require_env()
+    local v = tostring(e.adviser.earthquake.alert or "")
+    assert.truthy(#v > 0, "adviser.earthquake.alert must be overridden")
+    assert.truthy(v:lower():find("infrastructure", 1, true),
+      "adviser.earthquake.alert should mention 'infrastructure': " .. v)
+  end)
+
+  it("adviser.earthquake.alert does not say 'earthquake' or 'seismic'", function()
+    local e = require_env()
+    local v = tostring(e.adviser.earthquake.alert or "")
+    assert.falsy(v:lower():find("earthquake", 1, true),
+      "adviser.earthquake.alert must not say 'earthquake': " .. v)
+    assert.falsy(v:lower():find("seismic", 1, true),
+      "adviser.earthquake.alert must not say 'seismic': " .. v)
+  end)
+
+  it("adviser.earthquake.damage is overridden and contains a %d format specifier", function()
+    local e = require_env()
+    local v = tostring(e.adviser.earthquake.damage or "")
+    assert.truthy(#v > 0, "adviser.earthquake.damage must be overridden")
+    assert.truthy(v:find("%d", 1, true),
+      "adviser.earthquake.damage should have a %d format arg: " .. v)
+  end)
+
+  it("adviser.earthquake.ended is overridden and mentions severity", function()
+    local e = require_env()
+    local v = tostring(e.adviser.earthquake.ended or "")
+    assert.truthy(#v > 0, "adviser.earthquake.ended must be overridden")
+    assert.truthy(v:find("%d", 1, true),
+      "adviser.earthquake.ended should have a %d for severity: " .. v)
+  end)
+
+  it("adviser.earthquake.ended does not say 'earthquake'", function()
+    local e = require_env()
+    local v = tostring(e.adviser.earthquake.ended or "")
+    assert.falsy(v:lower():find("earthquake", 1, true),
+      "adviser.earthquake.ended must not say 'earthquake': " .. v)
+  end)
+
+  it("misc.earthquakes_off is overridden and does not say 'earthquakes'", function()
+    local e = require_env()
+    local v = tostring(e.misc.earthquakes_off or "")
+    assert.truthy(#v > 0, "misc.earthquakes_off must be overridden")
+    assert.falsy(v:lower():find("earthquakes", 1, true),
+      "misc.earthquakes_off must not say 'earthquakes': " .. v)
+  end)
+
+  it("misc.earthquakes_on is overridden and does not say 'earthquakes'", function()
+    local e = require_env()
+    local v = tostring(e.misc.earthquakes_on or "")
+    assert.truthy(#v > 0, "misc.earthquakes_on must be overridden")
+    assert.falsy(v:lower():find("earthquakes", 1, true),
+      "misc.earthquakes_on must not say 'earthquakes': " .. v)
+  end)
+
+  it("cheats_window.cheats.toggle_earthquake is overridden with IT label", function()
+    local e = require_env()
+    local v = tostring(e.cheats_window.cheats.toggle_earthquake or "")
+    assert.truthy(#v > 0, "cheats_window.cheats.toggle_earthquake must be overridden")
+    assert.falsy(v:lower():find("earthquake", 1, true),
+      "cheats_window.cheats.toggle_earthquake must not say 'earthquake': " .. v)
+  end)
+
+  it("cheats_window.cheats.earthquake is overridden with IT label", function()
+    local e = require_env()
+    local v = tostring(e.cheats_window.cheats.earthquake or "")
+    assert.truthy(#v > 0, "cheats_window.cheats.earthquake must be overridden")
+    assert.falsy(v:lower():find("earthquake", 1, true),
+      "cheats_window.cheats.earthquake must not say 'earthquake': " .. v)
+  end)
+
+  it("tooltip.cheats_window.cheats.toggle_earthquake is overridden", function()
+    local e = require_env()
+    local v = tostring(e.tooltip.cheats_window.cheats.toggle_earthquake or "")
+    assert.truthy(#v > 0, "tooltip.cheats_window.cheats.toggle_earthquake must be overridden")
+    assert.falsy(v:lower():find("earthquake", 1, true),
+      "tooltip must not say 'earthquake': " .. v)
+  end)
+
+  it("tooltip.cheats_window.cheats.earthquake is overridden", function()
+    local e = require_env()
+    local v = tostring(e.tooltip.cheats_window.cheats.earthquake or "")
+    assert.truthy(#v > 0, "tooltip.cheats_window.cheats.earthquake must be overridden")
+    assert.falsy(v:lower():find("earthquake", 1, true),
+      "tooltip must not say 'earthquake': " .. v)
   end)
 
 end)

@@ -797,6 +797,9 @@ function PlayerHospital:tickEarthquake(stage)
   if stage == "warning_start" then
     ui:beginShakeScreen(0.2)
     ui:playRandomAnnouncement(announcements, AnnouncementPriority.Critical)
+    -- Surface the IT-themed adviser alert so the player gets a text notification
+    -- as well as the audio announcement.
+    ui.adviser:say(_A.earthquake.alert)
   elseif stage == "main_start" then
     ui:playRandomAnnouncement(announcements, AnnouncementPriority.Critical)
 
